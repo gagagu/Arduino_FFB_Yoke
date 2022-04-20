@@ -14,7 +14,7 @@ See [Wiki](https://github.com/gagagu/Arduino_FFB_Yoke/wiki) for more info.
 If you want to use more than one Arduino Joysticks you have to change the Joystick.h file JOYSTICK_DEFAULT_REPORT_ID number to different number
 Example:
 
-### #define JOYSTICK_DEFAULT_REPORT_ID         0x04
+#### #define JOYSTICK_DEFAULT_REPORT_ID         0x04
 
 Also you can define the USB Name of the Joystick by changing the boards.txt file normally found in
 ### C:\Program Files (x86)\Arduino\hardware\arduino\avr\boards.txt
