@@ -1,5 +1,4 @@
 #define NODEBUG
-#define COMINO
 #ifdef _VARIANT_ARDUINO_DUE_X_
 #define Serial SerialUSB
 #endif
@@ -9,7 +8,6 @@
 
 #include "src/Joystick.h"
 #include "config.h"
-#include "order.h"
 
 // -------------------------
 // Various global variables
@@ -67,10 +65,6 @@ void setup() {
 void loop(){
     ReadPots();
 
-    #ifdef COMINO
-    get_messages_from_serial();
-    #endif
-
     unsigned long currentMillis;
     currentMillis = millis();
     // do not run more frequently than these many milliseconds
@@ -90,13 +84,7 @@ void loop(){
             updateEffects(false);
         }
 
-        #ifdef COMINO
-        if (forces_requested) {
-            sendForces();
-            forces_requested = false;
-        }
-        #endif
-    }
+   }
 
     DriveMotors();
 }
