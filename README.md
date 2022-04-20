@@ -3,7 +3,7 @@ Flightsim FFB Yoke with Arduino Leonardo
 
 ### Use at your own risk!
 
-###This project is still in development and will be extend constantly.
+### This project is still in development and will be extend constantly.
 
 It shows how to create a force feedback yoke (and later pedals) for using with Flight Simulator.
 It consist of 3d components, electronic schematics and arduino source code.
