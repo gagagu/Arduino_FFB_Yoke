@@ -19,3 +19,4 @@ This project is a combination of several existing github projects and 3d Models 
 
 ### Thingiverse
 * [Saitek FFB Yoke](https://www.thingiverse.com/thing:5241628)
+* [CadetYoke v2.0](https://www.thingiverse.com/thing:4884092)
