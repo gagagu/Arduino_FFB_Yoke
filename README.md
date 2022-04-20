@@ -10,9 +10,12 @@ It consist of 3d components, electronic schematics and arduino source code.
 This project is a combination of several existing github projects and 3d Models from Thingiverse.com
 
 ### Github Projects, Thanks a lot for your work!
-* [FINO] (https://github.com/jmriego/Fino)
+* [FINO](https://github.com/jmriego/Fino)
 * [Heironimus](https://github.com/MHeironimus/ArduinoJoystickLibrary)
 * [hoantv](https://github.com/hoantv/VNWheel)
 * [YukMingLaw](https://github.com/YukMingLaw/ArduinoJoystickWithFFBLibrary) 
 * [arafin](https://github.com/araffin/arduino-robust-serial/)
 * [jimmyberg](https://github.com/jimmyberg/LowPassFilter)
+
+### Thingiverse
+* [Saitek FFB Yoke](https://www.thingiverse.com/thing:5241628)
