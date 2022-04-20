@@ -1,50 +1,84 @@
 // I would define the Arduino pins here at the top
 
-//#define ROLL_R_EN 8
-#define ROLL_L_EN 10
-#define ROLL_R_EN 9
-#define ROLL_L_PWM 11
-#define ROLL_R_PWM 12
+// Pitch
+#define PITCH_EN 11
+#define PITCH_R_PWM 12
+#define PITCH_L_PWM 13
+
+// Roll
+#define ROLL_EN 8
+#define ROLL_R_PWM 9
+#define ROLL_L_PWM 10
+
+// Pedal
+#define PEDAL_EN 5
+#define PEDAL_R_PWM 6
+#define PEDAL_L_PWM 7
+
+//Potis
+#define POTI_ROLL A2
+#define POTI_PITCH A1
+#define POTI_PEDAL A0
 
 void ArduinoSetup()
 {
-    // set up the Arduino pins or other requirements
-  pinMode(ROLL_L_EN, OUTPUT);
-  pinMode(ROLL_R_EN, OUTPUT);
-  pinMode(ROLL_L_PWM, OUTPUT);
+  // set up the Arduino pins or other requirements
+  pinMode(PITCH_EN, OUTPUT);
+  pinMode(PITCH_R_PWM, OUTPUT);
+  pinMode(PITCH_L_PWM, OUTPUT);
+
+  pinMode(ROLL_EN, OUTPUT);
   pinMode(ROLL_R_PWM, OUTPUT);
-  
-  pinMode(A0,INPUT);
-  pinMode(A2,INPUT);
+  pinMode(ROLL_L_PWM, OUTPUT);
+
+  pinMode(PEDAL_EN, OUTPUT);
+  pinMode(PEDAL_R_PWM, OUTPUT);
+  pinMode(PEDAL_L_PWM, OUTPUT);
+      
+  pinMode(POTI_ROLL,INPUT);
+  pinMode(POTI_PITCH,INPUT);
+  pinMode(POTI_PEDAL,INPUT);
 }
 
 void ReadPots()
 {
-    // this example supposes A2 is X and A3 is Y axis
-
-    
-    pos[0] = map(analogRead(A2), 0, 1023, minX, maxX);
-    pos[1] = 0; //map(analogRead(A3), 0, 1023, minY, maxY);
+    // read positions
+    pos[0] = map(analogRead(POTI_PITCH), 0, 1023, minX, maxX);
+    pos[1] = map(analogRead(POTI_ROLL), 0, 1023, minY, maxY);
+    pos[2] = 0; //map(analogRead(POTI_PEDAL), 0, 1023, minY, maxY);
     pos_updated = true;
     
 }
 
 void DriveMotors() {
-    // X Axis Function
-    // Replace this with code specific to the motor you have connected
-    // forces[0] and forces[1] are the X,Y forces
-    // in the example below 10 is the minimum analog value to send if your motor does
-    //   not react with a number less than 10
-    //   244 would be the maximum value you want to send
-    
-    // X Axis Funktion
-    if(forces[1] > 0){
-      //digitalWrite(ROLL_L_EN,HIGH);
-      //digitalWrite(ROLL_R_EN,HIGH);
-      analogWrite(ROLL_R_PWM,map(abs(forces[1]), 0, 10000, 1, 244));
-    }else{
-      //digitalWrite(ROLL_L_EN,HIGH);
-      //digitalWrite(ROLL_R_EN,HIGH);
-      analogWrite(ROLL_L_PWM,map(abs(forces[1]), 0, 10000, 1, 244));
-    }
+  // Pitch forces
+  if(forces[0]>0){
+    digitalWrite(PITCH_EN,HIGH);
+    analogWrite(PITCH_R_PWM,map(abs(forces[0]), 0, 10000, 1, 244));
+  }else{
+    digitalWrite(PITCH_EN,HIGH);
+    analogWrite(PITCH_L_PWM,map(abs(forces[0]), 0, 10000, 1, 244));
+  }
+
+  // Roll forces
+  if(forces[1]>0){
+    digitalWrite(ROLL_EN,HIGH);
+    analogWrite(ROLL_R_PWM,map(abs(forces[1]), 0, 10000, 1, 244));
+  }else{
+    digitalWrite(ROLL_EN,HIGH);
+    analogWrite(ROLL_L_PWM,map(abs(forces[1]), 0, 10000, 1, 244));
+  }
+
+//  // Pedal forces
+//  if(forces[2]>0){
+//    digitalWrite(PEDAL_EN,HIGH);
+//    analogWrite(PEDAL_R_PWM,map(abs(forces[2]), 0, 10000, 1, 244));
+//  }else{
+//    digitalWrite(PEDAL_EN,HIGH);
+//    analogWrite(PEDAL_L_PWM,map(abs(forces[2]), 0, 10000, 1, 244));
+//  }
+       
+  digitalWrite(PITCH_EN,LOW);
+  digitalWrite(ROLL_EN,LOW);
+//  digitalWrite(PEDAL_EN,LOW);
 }
