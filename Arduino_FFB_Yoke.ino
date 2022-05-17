@@ -1,4 +1,4 @@
-#define NODEBUG
+#define DEBUG
 #ifdef _VARIANT_ARDUINO_DUE_X_
 #define Serial SerialUSB
 #endif

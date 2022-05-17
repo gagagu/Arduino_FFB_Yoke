@@ -1,3 +1,16 @@
-Error initializing joystick device : 
-REGDB_E_CLASSNOTREG : 
-Class not registered
+Enumerated Joystick : Arduino FFB Yoke
+Supported Effects : 
+   - GUID_ConstantForce
+   - GUID_RampForce
+   - GUID_Square
+   - GUID_Sine
+   - GUID_Triangle
+   - GUID_SawtoothUp
+   - GUID_SawtoothDown
+   - GUID_Spring
+   - GUID_Damper
+   - GUID_Inertia
+   - GUID_Friction
+   - GUID_CustomForce
+
+Creating effects for Arduino FFB Yoke

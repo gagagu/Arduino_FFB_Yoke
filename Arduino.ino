@@ -88,26 +88,30 @@ void ReadPots()
 
 void DriveMotors() {
   // Pitch forces
-  if(forces[0]>0){
+ 
+  if(forces[1]>0){
     digitalWrite(PITCH_EN,HIGH);
-    analogWrite(PITCH_R_PWM,map(abs(forces[0]), 0, 10000, 1, 244));
+    analogWrite(PITCH_R_PWM,map(abs(forces[1]), 0, 10000, 1, 244));
   }else{
     digitalWrite(PITCH_EN,HIGH);
-    analogWrite(PITCH_L_PWM,map(abs(forces[0]), 0, 10000, 1, 244));
+    analogWrite(PITCH_L_PWM,map(abs(forces[1]), 0, 10000, 1, 244));
   }
 
   // Roll forces
-  if(forces[1]>0){
-    digitalWrite(ROLL_EN,HIGH);
-    analogWrite(ROLL_R_PWM,map(abs(forces[1]), 0, 10000, 1, 244));
-  }else{
-    digitalWrite(ROLL_EN,HIGH);
-    analogWrite(ROLL_L_PWM,map(abs(forces[1]), 0, 10000, 1, 244));
+  if(forces[0]==0)
+  {
+    digitalWrite(ROLL_EN,LOW);
   }
-
-       
-  digitalWrite(PITCH_EN,LOW);
-  digitalWrite(ROLL_EN,LOW);
+  else{
+    if(forces[0]>50){
+      digitalWrite(ROLL_EN,HIGH);
+      analogWrite(ROLL_L_PWM,map(abs(forces[0]), 0, 10000, 1, 244));
+    }
+    if(forces[0]<(-50)){    
+      digitalWrite(ROLL_EN,HIGH);
+      analogWrite(ROLL_R_PWM,map(abs(forces[0]), 0, 10000, 1, 244));
+    }
+  }
 
 }
 
