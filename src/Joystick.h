@@ -42,9 +42,7 @@
 //================================================================================
 //  Joystick (Gamepad)
 
-//my personal id
-#define JOYSTICK_DEFAULT_REPORT_ID         0x05
-//my personal id
+#define JOYSTICK_DEFAULT_REPORT_ID         0x01
 #define JOYSTICK_DEFAULT_BUTTON_COUNT        32
 #define JOYSTICK_DEFAULT_AXIS_MINIMUM         0
 #define JOYSTICK_DEFAULT_AXIS_MAXIMUM      1023

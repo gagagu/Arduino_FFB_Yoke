@@ -21,37 +21,30 @@ unsigned long nextEffectsMillis;
 // --------------------------
 #define minX -32768
 #define maxX 32767
-
 #define minY -32768
 #define maxY 32767
-
-#define minZ -32768
-#define maxZ 32767
 
 bool is_connected = false;
 bool forces_requested = false;
 bool pos_updated = false;
 
-int16_t pos[3] = {0, 0, 0};
+int16_t pos[2] = {0, 0};
 int lastX;
 int lastY;
-int lastZ;
 int lastVelX;
 int lastVelY;
-int lastVelZ;
 int lastAccelX;
 int lastAccelY;
-int lastAccelZ;
 
-EffectParams effects[3];
-int32_t forces[3] = {0, 0, 0};
+EffectParams effects[2];
+int32_t forces[2] = {0, 0};
 
 Joystick_ Joystick(
     JOYSTICK_DEFAULT_REPORT_ID, JOYSTICK_TYPE_JOYSTICK,
-    6, 1, // Button Count, Hat Switch Count
-    true, true, true, // X, Y, Z
+    19, 2, // Button Count, Hat Switch Count
+    true, true, false, // X, Y, Z
     false, false, false, // Rx, Ry, Rz
-    false, false); // rudder, throttle
+    true, true); // rudder, throttle
 
 void setup() {
 
@@ -91,7 +84,7 @@ void loop(){
             updateEffects(false);
         }
 
-   }
+    }
 
     DriveMotors();
 }

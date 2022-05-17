@@ -1,0 +1,3 @@
+Error initializing joystick device : 
+REGDB_E_CLASSNOTREG : 
+Class not registered

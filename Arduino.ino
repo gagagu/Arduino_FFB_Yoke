@@ -10,11 +10,6 @@
 #define ROLL_R_PWM 9
 #define ROLL_L_PWM 10
 
-// Pedal
-#define PEDAL_EN 5
-#define PEDAL_R_PWM 6
-#define PEDAL_L_PWM 7
-
 //Potis
 #define POTI_ROLL A2
 #define POTI_PITCH A1
@@ -58,13 +53,8 @@ void ArduinoSetup()
   pinMode(ROLL_R_PWM, OUTPUT);
   pinMode(ROLL_L_PWM, OUTPUT);
 
-  pinMode(PEDAL_EN, OUTPUT);
-  pinMode(PEDAL_R_PWM, OUTPUT);
-  pinMode(PEDAL_L_PWM, OUTPUT);
-
   pinMode(POTI_ROLL,INPUT);
   pinMode(POTI_PITCH,INPUT);
-  pinMode(POTI_PEDAL,INPUT);
 
   pinMode(MUX_S0, OUTPUT);
   pinMode(MUX_S1, OUTPUT);
@@ -81,10 +71,6 @@ void ArduinoSetup()
   digitalWrite(ROLL_R_PWM, LOW);
   digitalWrite(ROLL_L_PWM, LOW);
   
-  digitalWrite(PEDAL_EN, LOW);
-  digitalWrite(PEDAL_R_PWM, LOW);
-  digitalWrite(PEDAL_L_PWM, LOW);
-
   digitalWrite(MUX_S0, LOW);
   digitalWrite(MUX_S1, LOW);
   digitalWrite(MUX_S2, LOW);
@@ -94,9 +80,8 @@ void ArduinoSetup()
 void ReadPots()
 {
     // read positions
-    pos[0] = map(analogRead(POTI_PITCH), 0, 1023, minX, maxX);
-    pos[1] = map(analogRead(POTI_ROLL), 0, 1023, minY, maxY);
-    pos[2] = 0; //map(analogRead(POTI_PEDAL), 0, 1023, minY, maxY);
+    pos[0] = map(analogRead(POTI_ROLL), 0, 1023, minY, maxY);
+    pos[1] = 0; //map(analogRead(POTI_PITCH), 0, 1023, minX, maxX);
     pos_updated = true;
     
 }
@@ -120,18 +105,10 @@ void DriveMotors() {
     analogWrite(ROLL_L_PWM,map(abs(forces[1]), 0, 10000, 1, 244));
   }
 
-//  // Pedal forces
-//  if(forces[2]>0){
-//    digitalWrite(PEDAL_EN,HIGH);
-//    analogWrite(PEDAL_R_PWM,map(abs(forces[2]), 0, 10000, 1, 244));
-//  }else{
-//    digitalWrite(PEDAL_EN,HIGH);
-//    analogWrite(PEDAL_L_PWM,map(abs(forces[2]), 0, 10000, 1, 244));
-//  }
        
   digitalWrite(PITCH_EN,LOW);
   digitalWrite(ROLL_EN,LOW);
-//  digitalWrite(PEDAL_EN,LOW);
+
 }
 
 void ReadMux(){
