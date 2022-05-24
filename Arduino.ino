@@ -1,9 +1,9 @@
 // I would define the Arduino pins here at the top
 
 // Pitch
-#define PITCH_EN 11
-#define PITCH_R_PWM 12
-#define PITCH_L_PWM 13
+#define PITCH_EN 13
+#define PITCH_R_PWM 3
+#define PITCH_L_PWM 11
 
 // Roll
 #define ROLL_EN 8
@@ -14,7 +14,7 @@
 #define POTI_ROLL A0
 #define POTI_PITCH A1
 #define POTI_PEDAL A2
-
+//https://www.mintgruen.tu-berlin.de/robotikWiki/doku.php?id=techniken:pwmfrequenz
 // Mux
 #define MUX_S0 0
 #define MUX_S1 1
@@ -75,8 +75,15 @@ void ArduinoSetup()
   digitalWrite(MUX_S1, LOW);
   digitalWrite(MUX_S2, LOW);
   digitalWrite(MUX_S3, LOW);
-  TCCR1B=TCCR1B&(~6);    // Remove preescaler
- 
+//  TCCR1B=TCCR1B&(~6);    // Remove preescaler
+//   TCCR0B=TCCR0B&(~6);    // Remove preescaler
+//  TCCR1B = TCCR1B & B11111000 | B00000001;
+//  TCCR2B = TCCR2B & B11111000 | B00000001;  
+   // timer 1B: pin 9 & 10
+    TCCR1B = _BV(CS00); // change the PWM frequencey to 31.25kHz   - pins 9 & 10 
+    
+    // timer 0B : pin 3 & 11
+    TCCR0B = _BV(CS00); // change the PWM frequencey to 31.25 kHz  - pin 3 & 11
 }
 
 void ReadPots()
@@ -90,14 +97,34 @@ void ReadPots()
 
 void DriveMotors() {
   // Pitch forces
-
-  if (forces[1] > 0) {
-    digitalWrite(PITCH_EN, HIGH);
-    analogWrite(PITCH_R_PWM, map(abs(forces[1]), 0, 1000, 1, 244));
-  } else {
-    digitalWrite(PITCH_EN, HIGH);
-    analogWrite(PITCH_L_PWM, map(abs(forces[1]), 0, 1000, 1, 244));
-  }
+//
+//  if (forces[1] <= 100 && forces[1] >= -100)
+//  {
+//    digitalWrite(PITCH_EN,LOW);
+//  }
+//  else {
+         digitalWrite(PITCH_EN,HIGH);
+         
+    int speed = map(abs(forces[1]), -1000, 1850, 1, 150);
+    Serial.print(speed);
+    Serial.print(", ");
+     Serial.println(forces[1]);
+    if (forces[1] > 50) {
+     analogWrite(PITCH_R_PWM, speed);
+     analogWrite(PITCH_L_PWM, 0);
+     //TCCR1B=TCCR1B&(~6);    // Remove preescaler
+    }else{
+      if (forces[1] < (-50)) {
+        analogWrite(PITCH_R_PWM, 0);
+        analogWrite(PITCH_L_PWM, speed);
+//     // TCCR1B=TCCR1B&(~6);    // Remove preescaler
+      }else{
+         //digitalWrite(PITCH_EN,LOW);
+         analogWrite(PITCH_R_PWM, 0);
+         analogWrite(PITCH_L_PWM, 0);
+      }
+    }
+   
 
   // Roll forces
   if (forces[0] <= 100 && forces[0] >= -100)
@@ -105,17 +132,16 @@ void DriveMotors() {
     digitalWrite(ROLL_EN,LOW);
   }
   else {
+    int speed = map(abs(forces[0]), 0, 8000, 1, 200);
+    
     if (forces[0] > 100) {
-      digitalWrite(ROLL_EN,HIGH);
-     int speed = map(abs(forces[0]), 0, 8000, 1, 255);
+     digitalWrite(ROLL_EN,HIGH);
      analogWrite(ROLL_L_PWM, speed);
-   // TCCR1B=TCCR1B&(~6);    // Remove preescaler
-
+     //TCCR1B=TCCR1B&(~6);    // Remove preescaler
     }
     if (forces[0] < (-100)) {
       digitalWrite(ROLL_EN,HIGH);
-     int speed = map(abs(forces[0]), 0, 8000, 1, 255);
-     analogWrite(ROLL_R_PWM, speed);
+      analogWrite(ROLL_R_PWM, speed);
       //TCCR1B=TCCR1B&(~6);    // Remove preescaler
     }
   }
