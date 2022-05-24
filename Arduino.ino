@@ -11,9 +11,9 @@
 #define ROLL_L_PWM 10
 
 //Potis
-#define POTI_ROLL A2
+#define POTI_ROLL A0
 #define POTI_PITCH A1
-#define POTI_PEDAL A0
+#define POTI_PEDAL A2
 
 // Mux
 #define MUX_S0 0
@@ -83,7 +83,7 @@ void ReadPots()
 {
   // read positions
   pos[0] = map(analogRead(POTI_ROLL), 0, 1023, minY, maxY);
-  pos[1] = 0; //map(analogRead(POTI_PITCH), 0, 1023, minX, maxX);
+  pos[1] = map(analogRead(POTI_PITCH), 0, 1023, minX, maxX);
   pos_updated = true;
 
 }
