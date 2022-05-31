@@ -92,7 +92,10 @@ void ReadPots()
   pos[0] = map(analogRead(POTI_ROLL), 0, 1023, minY, maxY);
   pos[1] = map(analogRead(POTI_PITCH), 0, 1023, minX, maxX);
   pos_updated = true;
-
+Serial.print(pos[0]);
+    Serial.print(", ");
+Serial.print(pos[1]);
+    Serial.print(", ");
 }
 
 void DriveMotors() {
@@ -105,7 +108,7 @@ void DriveMotors() {
 //  else {
          digitalWrite(PITCH_EN,HIGH);
          
-    int speed = map(abs(forces[1]), -1000, 1850, 1, 150);
+    int speed = map(abs(forces[1]), 0, 6000, 1, 150);
     Serial.print(speed);
     Serial.print(", ");
      Serial.println(forces[1]);
@@ -132,7 +135,7 @@ void DriveMotors() {
     digitalWrite(ROLL_EN,LOW);
   }
   else {
-    int speed = map(abs(forces[0]), 0, 8000, 1, 200);
+    int speed = map(abs(forces[0]), 0, 10000, 1, 150);
     
     if (forces[0] > 100) {
      digitalWrite(ROLL_EN,HIGH);
