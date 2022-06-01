@@ -52,7 +52,7 @@ int muxChannel[16][4] = {
 #define max_roll_pwm_speed  150
 
 // Max Force for Max PWM Speed
-#define max_pitch_force 4000
+#define max_pitch_force 10000
 #define max_roll_force 10000
 
 // Dead Points for the middle
@@ -118,6 +118,7 @@ void ReadPots()
     Serial.print(pos[0]);
     Serial.print(", POTI_PITCH:");
     Serial.print(pos[1]);
+    Serial.print(", ");
   #endif     
 }//ReadPots
 
@@ -137,11 +138,11 @@ void DriveMotors() {
     // which direction?
     if (forces[1] > pitch_dead_point_max) {
       digitalWrite(PITCH_EN, HIGH);          // enable motor
-      analogWrite(PITCH_L_PWM, roll_speed);  // speed up
+      analogWrite(PITCH_R_PWM, pitch_speed);  // speed up
     }
     if (forces[1] < pitch_dead_point_min) {
       digitalWrite(PITCH_EN, HIGH);          // enable motor
-      analogWrite(PITCH_R_PWM, roll_speed);  // speed up
+      analogWrite(PITCH_L_PWM, pitch_speed);  // speed up
     }
   }
 
@@ -166,7 +167,14 @@ void DriveMotors() {
       analogWrite(ROLL_R_PWM, roll_speed);  // speed up
     }
   }
-
+  
+  #ifdef DEBUG
+    Serial.print(" roll_speed:");
+    Serial.print(roll_speed);
+    Serial.print(", pitch_speed:");
+    Serial.print(pitch_speed);
+    Serial.print(", ");
+  #endif     
 } //DriveMotors
 
 // Reads the button states over multiplexer
