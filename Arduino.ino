@@ -1,5 +1,3 @@
-// I would define the Arduino pins here at the top
-
 // Pitch
 #define PITCH_EN 13
 #define PITCH_R_PWM 3
@@ -14,7 +12,12 @@
 #define POTI_ROLL A0
 #define POTI_PITCH A1
 #define POTI_PEDAL A2
-//https://www.mintgruen.tu-berlin.de/robotikWiki/doku.php?id=techniken:pwmfrequenz
+
+// Speed calculation
+int roll_speed = 0;
+int pitch_speed=0;
+
+// multiplexer for buttons, not finished yet!
 // Mux
 #define MUX_S0 0
 #define MUX_S1 1
@@ -41,6 +44,22 @@ int muxChannel[16][4] = {
   {0, 1, 1, 1}, //channel 14
   {1, 1, 1, 1} //channel 15
 };
+
+// Some other definitions
+
+// Max pwm byte for pwm speed
+#define max_pitch_pwm_speed  150
+#define max_roll_pwm_speed  150
+
+// Max Force for Max PWM Speed
+#define max_pitch_force 4000
+#define max_roll_force 10000
+
+// Dead Points for the middle
+#define roll_dead_point_min -100
+#define roll_dead_point_max 100
+#define pitch_dead_point_min -50
+#define pitch_dead_point_max 50
 
 void ArduinoSetup()
 {
@@ -75,82 +94,83 @@ void ArduinoSetup()
   digitalWrite(MUX_S1, LOW);
   digitalWrite(MUX_S2, LOW);
   digitalWrite(MUX_S3, LOW);
-//  TCCR1B=TCCR1B&(~6);    // Remove preescaler
-//   TCCR0B=TCCR0B&(~6);    // Remove preescaler
-//  TCCR1B = TCCR1B & B11111000 | B00000001;
-//  TCCR2B = TCCR2B & B11111000 | B00000001;  
-   // timer 1B: pin 9 & 10
-    TCCR1B = _BV(CS00); // change the PWM frequencey to 31.25kHz   - pins 9 & 10 
-    
-    // timer 0B : pin 3 & 11
-    TCCR0B = _BV(CS00); // change the PWM frequencey to 31.25 kHz  - pin 3 & 11
+
+  // not for all Arduinos!
+  // This sets the PWM Speed to maximun for noise reduction
+  
+  // timer 1B: pin 9 & 10
+  TCCR1B = _BV(CS00); // change the PWM frequencey to 31.25kHz   - pins 9 & 10
+
+  // timer 0B : pin 3 & 11
+  TCCR0B = _BV(CS00); // change the PWM frequencey to 31.25 kHz  - pin 3 & 11
 }
 
+// Read the axes poti values and save it
 void ReadPots()
 {
-  // read positions
+  // read poti positions
   pos[0] = map(analogRead(POTI_ROLL), 0, 1023, minY, maxY);
   pos[1] = map(analogRead(POTI_PITCH), 0, 1023, minX, maxX);
   pos_updated = true;
-Serial.print(pos[0]);
-    Serial.print(", ");
-Serial.print(pos[1]);
-    Serial.print(", ");
-}
+  
+  #ifdef DEBUG
+    Serial.print(" POTI_ROLL:");
+    Serial.print(pos[0]);
+    Serial.print(", POTI_PITCH:");
+    Serial.print(pos[1]);
+  #endif     
+}//ReadPots
 
+
+// calculates the motor speeds and controls the motors
 void DriveMotors() {
+  
   // Pitch forces
-//
-//  if (forces[1] <= 100 && forces[1] >= -100)
-//  {
-//    digitalWrite(PITCH_EN,LOW);
-//  }
-//  else {
-         digitalWrite(PITCH_EN,HIGH);
-         
-    int speed = map(abs(forces[1]), 0, 6000, 1, 150);
-    Serial.print(speed);
-    Serial.print(", ");
-     Serial.println(forces[1]);
-    if (forces[1] > 50) {
-     analogWrite(PITCH_R_PWM, speed);
-     analogWrite(PITCH_L_PWM, 0);
-     //TCCR1B=TCCR1B&(~6);    // Remove preescaler
-    }else{
-      if (forces[1] < (-50)) {
-        analogWrite(PITCH_R_PWM, 0);
-        analogWrite(PITCH_L_PWM, speed);
-//     // TCCR1B=TCCR1B&(~6);    // Remove preescaler
-      }else{
-         //digitalWrite(PITCH_EN,LOW);
-         analogWrite(PITCH_R_PWM, 0);
-         analogWrite(PITCH_L_PWM, 0);
-      }
-    }
-   
-
-  // Roll forces
-  if (forces[0] <= 100 && forces[0] >= -100)
+  if (forces[1] <= pitch_dead_point_max && forces[1] >= pitch_dead_point_min) // between dead points no motor
   {
-    digitalWrite(ROLL_EN,LOW);
+    digitalWrite(PITCH_EN, LOW); // disable motor
+    pitch_speed = 0;             // speed to 0
   }
   else {
-    int speed = map(abs(forces[0]), 0, 10000, 1, 150);
-    
-    if (forces[0] > 100) {
-     digitalWrite(ROLL_EN,HIGH);
-     analogWrite(ROLL_L_PWM, speed);
-     //TCCR1B=TCCR1B&(~6);    // Remove preescaler
+    pitch_speed = map(abs(forces[1]), 0, max_pitch_force, 1, max_pitch_pwm_speed); // calculate motor speed (pwm) by force between 1 and max pwm speed
+
+    // which direction?
+    if (forces[1] > pitch_dead_point_max) {
+      digitalWrite(PITCH_EN, HIGH);          // enable motor
+      analogWrite(PITCH_L_PWM, roll_speed);  // speed up
     }
-    if (forces[0] < (-100)) {
-      digitalWrite(ROLL_EN,HIGH);
-      analogWrite(ROLL_R_PWM, speed);
-      //TCCR1B=TCCR1B&(~6);    // Remove preescaler
+    if (forces[1] < pitch_dead_point_min) {
+      digitalWrite(PITCH_EN, HIGH);          // enable motor
+      analogWrite(PITCH_R_PWM, roll_speed);  // speed up
     }
   }
 
-}
 
+
+  // Roll forces
+  if (forces[0] <= roll_dead_point_max && forces[0] >= roll_dead_point_min) // between dead points no motor
+  {
+    digitalWrite(ROLL_EN, LOW); // disable motor
+    roll_speed = 0;             // speed to 0
+  }
+  else {
+    roll_speed = map(abs(forces[0]), 0, max_roll_force, 1, max_roll_pwm_speed); // calculate motor speed (pwm) by force between 1 and max pwm speed
+
+    // which direction?
+    if (forces[0] > roll_dead_point_max) {
+      digitalWrite(ROLL_EN, HIGH);          // enable motor
+      analogWrite(ROLL_L_PWM, roll_speed);  // speed up
+    }
+    if (forces[0] < roll_dead_point_min) {
+      digitalWrite(ROLL_EN, HIGH);          // enable motor
+      analogWrite(ROLL_R_PWM, roll_speed);  // speed up
+    }
+  }
+
+} //DriveMotors
+
+// Reads the button states over multiplexer
+// Not finished, needs to be done
 void ReadMux() {
   // not finished yet
   int channel = 0;
@@ -161,4 +181,4 @@ void ReadMux() {
   }
   int val = analogRead(MUX_SIGNAL);
 
-}
+} //ReadMux

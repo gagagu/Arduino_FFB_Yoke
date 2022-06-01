@@ -54,7 +54,7 @@ void setup() {
 
     // setup communication
     #if defined(COMINO) || defined(DEBUG)
-    Serial.begin(SERIAL_BAUD);
+      Serial.begin(SERIAL_BAUD);
     #endif
 
     // setup timing and run them as soon as possible
@@ -88,4 +88,6 @@ void loop(){
     }
 
     DriveMotors();
+    
+    Serial.println("");
 }
