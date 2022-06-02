@@ -11,6 +11,7 @@ It shows how to create a force feedback yoke (and later pedals) for using with F
 It consist of 3d components, electronic schematics and arduino source code.
 
 See [Wiki](https://github.com/gagagu/Arduino_FFB_Yoke/wiki) for more info.
+Please read the [Issues](https://github.com/gagagu/Arduino_FFB_Yoke/wiki/Issues-and-ToDo) before begin!
 
 ## Important Info
 If you want to use more than one Arduino Joysticks you have to change the Joystick.h file JOYSTICK_DEFAULT_REPORT_ID number to different number
