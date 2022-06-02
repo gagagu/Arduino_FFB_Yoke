@@ -11,7 +11,6 @@
 //Potis
 #define POTI_ROLL A0
 #define POTI_PITCH A1
-#define POTI_PEDAL A2
 
 // Speed calculation
 int roll_speed = 0;
@@ -19,10 +18,10 @@ int pitch_speed=0;
 
 // multiplexer for buttons, not finished yet!
 // Mux
-#define MUX_S0 0
-#define MUX_S1 1
-#define MUX_S2 2
-#define MUX_S3 3
+#define MUX_S0 4
+#define MUX_S1 5
+#define MUX_S2 6
+#define MUX_S3 7
 #define MUX_SIGNAL A5
 
 int muxControlPin[] = {MUX_S0, MUX_S1, MUX_S2, MUX_S3};
