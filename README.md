@@ -1,7 +1,8 @@
 # Arduino_FFB_Yoke
 Flightsim FFB Yoke with Arduino Leonardo
 
-### Use at your own risk!
+### use at your own risk. 
+I am not responsible for any damage to man and machine. Be careful when handling electronics and mechanics.
 ### It is not allowed to use my work in a commercial way!
 ### This project is still in development and will be extend constantly.
 
