@@ -13,6 +13,9 @@ It consist of 3d components, electronic schematics and arduino source code.
 See [Wiki](https://github.com/gagagu/Arduino_FFB_Yoke/wiki) for more info.
 ### Please read the [Issues](https://github.com/gagagu/Arduino_FFB_Yoke/wiki/Issues-and-ToDo) before begin!
 
+## Discord
+You are welcome to join my Discord to get newest Info and support, [here](https://discord.gg/btbg4JRz)
+
 ## Important Info
 If you want to use more than one Arduino Joysticks you have to change the Joystick.h file JOYSTICK_DEFAULT_REPORT_ID number to different number
 Example:
