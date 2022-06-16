@@ -51,8 +51,8 @@ int muxChannel[16][4] = {
 #define max_roll_pwm_speed  150
 
 // Max Force for Max PWM Speed
-#define max_pitch_force 10000
-#define max_roll_force 10000
+#define max_pitch_force 2000
+#define max_roll_force 5000
 
 // Dead Points for the middle
 #define roll_dead_point_min -100
@@ -133,7 +133,6 @@ void DriveMotors() {
   }
   else {
     pitch_speed = map(abs(forces[1]), 0, max_pitch_force, 1, max_pitch_pwm_speed); // calculate motor speed (pwm) by force between 1 and max pwm speed
-
     // which direction?
     if (forces[1] > pitch_dead_point_max) {
       digitalWrite(PITCH_EN, HIGH);          // enable motor
@@ -146,7 +145,6 @@ void DriveMotors() {
   }
 
 
-
   // Roll forces
   if (forces[0] <= roll_dead_point_max && forces[0] >= roll_dead_point_min) // between dead points no motor
   {
@@ -155,7 +153,6 @@ void DriveMotors() {
   }
   else {
     roll_speed = map(abs(forces[0]), 0, max_roll_force, 1, max_roll_pwm_speed); // calculate motor speed (pwm) by force between 1 and max pwm speed
-
     // which direction?
     if (forces[0] > roll_dead_point_max) {
       digitalWrite(ROLL_EN, HIGH);          // enable motor
