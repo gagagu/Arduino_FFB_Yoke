@@ -1,4 +1,4 @@
-#define DEBUG
+#define NODEBUG
 #ifdef _VARIANT_ARDUINO_DUE_X_
 #define Serial SerialUSB
 #endif
@@ -40,12 +40,16 @@ int lastAccelY;
 EffectParams effects[2];
 int32_t forces[2] = {0, 0};
 
+// Buttons for Yoke
+//int16_t buttons_YokeHatSwitch = -1;
+//uint8_t buttons_Yoke[12] = {0,0,0,0,0,0,0,0,0,0,0,0};
+
 Joystick_ Joystick(
     JOYSTICK_DEFAULT_REPORT_ID, JOYSTICK_TYPE_JOYSTICK,
-    19, 2, // Button Count, Hat Switch Count
+    12, 1, // Button Count, Hat Switch Count
     true, true, false, // X, Y, Z
     false, false, false, // Rx, Ry, Rz
-    true, true); // rudder, throttle
+    false, false); // rudder, throttle
 
 void setup() {
 
@@ -65,12 +69,13 @@ void setup() {
 
 void loop(){
     ReadPots();
-
+    
     unsigned long currentMillis;
     currentMillis = millis();
     // do not run more frequently than these many milliseconds
     if (currentMillis >= nextJoystickMillis) {
         updateJoystickPos();
+        updateJoystickButtons();
         nextJoystickMillis = currentMillis + 2;
 
         // we calculate condition forces every 100ms or more frequently if we get position updates

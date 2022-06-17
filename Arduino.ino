@@ -14,7 +14,7 @@
 
 // Speed calculation
 int roll_speed = 0;
-int pitch_speed=0;
+int pitch_speed = 0;
 
 // multiplexer for buttons, not finished yet!
 // Mux
@@ -22,27 +22,8 @@ int pitch_speed=0;
 #define MUX_S1 5
 #define MUX_S2 6
 #define MUX_S3 7
+#define MUX_EN 3
 #define MUX_SIGNAL A5
-
-int muxControlPin[] = {MUX_S0, MUX_S1, MUX_S2, MUX_S3};
-int muxChannel[16][4] = {
-  {0, 0, 0, 0}, //channel 0
-  {1, 0, 0, 0}, //channel 1
-  {0, 1, 0, 0}, //channel 2
-  {1, 1, 0, 0}, //channel 3
-  {0, 0, 1, 0}, //channel 4
-  {1, 0, 1, 0}, //channel 5
-  {0, 1, 1, 0}, //channel 6
-  {1, 1, 1, 0}, //channel 7
-  {0, 0, 0, 1}, //channel 8
-  {1, 0, 0, 1}, //channel 9
-  {0, 1, 0, 1}, //channel 10
-  {1, 1, 0, 1}, //channel 11
-  {0, 0, 1, 1}, //channel 12
-  {1, 0, 1, 1}, //channel 13
-  {0, 1, 1, 1}, //channel 14
-  {1, 1, 1, 1} //channel 15
-};
 
 // Some other definitions
 
@@ -59,6 +40,9 @@ int muxChannel[16][4] = {
 #define roll_dead_point_max 100
 #define pitch_dead_point_min -50
 #define pitch_dead_point_max 50
+
+// Buttons
+#define button_right_trim_up 0b00001111
 
 void ArduinoSetup()
 {
@@ -78,7 +62,8 @@ void ArduinoSetup()
   pinMode(MUX_S1, OUTPUT);
   pinMode(MUX_S2, OUTPUT);
   pinMode(MUX_S3, OUTPUT);
-  pinMode(MUX_SIGNAL, INPUT);
+  pinMode(MUX_EN, OUTPUT);
+  pinMode(MUX_SIGNAL, INPUT_PULLUP);
 
   // define pin default states
   digitalWrite(PITCH_EN, LOW);
@@ -93,10 +78,11 @@ void ArduinoSetup()
   digitalWrite(MUX_S1, LOW);
   digitalWrite(MUX_S2, LOW);
   digitalWrite(MUX_S3, LOW);
+  digitalWrite(MUX_EN, HIGH);
 
   // not for all Arduinos!
   // This sets the PWM Speed to maximun for noise reduction
-  
+
   // timer 1B: pin 9 & 10
   TCCR1B = _BV(CS00); // change the PWM frequencey to 31.25kHz   - pins 9 & 10
 
@@ -111,20 +97,21 @@ void ReadPots()
   pos[0] = map(analogRead(POTI_ROLL), 0, 1023, minY, maxY);
   pos[1] = map(analogRead(POTI_PITCH), 0, 1023, minX, maxX);
   pos_updated = true;
-  
-  #ifdef DEBUG
-    Serial.print(" POTI_ROLL:");
-    Serial.print(pos[0]);
-    Serial.print(", POTI_PITCH:");
-    Serial.print(pos[1]);
-    Serial.print(", ");
-  #endif     
+
+#ifdef DEBUG
+  Serial.print("\tPO_ROLL:");
+  Serial.print(pos[0]);
+  Serial.print("\tPO_PITCH:");
+  Serial.print(pos[1]);
+#endif
+
+
 }//ReadPots
 
 
 // calculates the motor speeds and controls the motors
 void DriveMotors() {
-  
+
   // Pitch forces
   if (forces[1] <= pitch_dead_point_max && forces[1] >= pitch_dead_point_min) // between dead points no motor
   {
@@ -163,26 +150,63 @@ void DriveMotors() {
       analogWrite(ROLL_R_PWM, roll_speed);  // speed up
     }
   }
-  
-  #ifdef DEBUG
-    Serial.print(" roll_speed:");
-    Serial.print(roll_speed);
-    Serial.print(", pitch_speed:");
-    Serial.print(pitch_speed);
-    Serial.print(", ");
-  #endif     
+
+#ifdef DEBUG
+  Serial.print("\troll_sp:");
+  Serial.print(roll_speed);
+  Serial.print("\tpitch_sp:");
+  Serial.print(pitch_speed);
+#endif
 } //DriveMotors
 
-// Reads the button states over multiplexer
-// Not finished, needs to be done
-void ReadMux() {
-  // not finished yet
-  int channel = 0;
+bool readMux(bool s0, bool s1, bool s2, bool s3)
+{
+  digitalWrite(MUX_S0, s0);
+  digitalWrite(MUX_S1, s1);
+  digitalWrite(MUX_S2, s2);
+  digitalWrite(MUX_S3, s3);
+    
 
-  //loop through the 4 sig
-  for (int i = 0; i < 4; i ++) {
-    digitalWrite(muxControlPin[i], muxChannel[channel][i]);
+    
+  digitalWrite(MUX_EN, LOW);
+  bool val = digitalRead(MUX_SIGNAL);
+//      Serial.print("b:");
+//    Serial.print(s0);
+//    Serial.print(",");
+//    Serial.print(s1);
+//    Serial.print(",");
+//    Serial.print(s2);
+//    Serial.print(",");
+//    Serial.print(s3);
+//    Serial.print(",");
+//    Serial.print(val);
+//    Serial.print("\n");
+    
+  digitalWrite(MUX_EN, HIGH);
+  return val;
+}
+
+// Reads the button states over multiplexer
+// Must be done in this way because of memory issues
+// not finished yet
+void updateJoystickButtons() {
+//
+//  bool val = readMux(bitRead(button_right_trim_up, 0), bitRead(button_right_trim_up, 1), bitRead(button_right_trim_up, 2), bitRead(button_right_trim_up, 3));
+//  Serial.print("\tButton:");
+//  Serial.print(val);
+//  Serial.print("\t");
+//  Joystick.setButton(0, val);
+
+  for (int channel = 0; channel < 16; channel++)
+  {
+    bool val = readMux(bitRead(channel, 3), bitRead(channel, 2), bitRead(channel, 1), bitRead(channel, 0));
+//    Serial.print("b:");
+//    Serial.print(channel);
+//    Serial.print(",");
+//    Serial.print(val);
+//    Serial.print("\t");
+  
+    //Joystick.setButton(channel, readMux(bitRead(channel, 3), bitRead(channel, 2), bitRead(channel, 1), bitRead(channel, 0)));
   }
-  int val = analogRead(MUX_SIGNAL);
 
 } //ReadMux
