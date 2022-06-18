@@ -2,6 +2,7 @@
 #define PITCH_EN 13
 #define PITCH_R_PWM 3
 #define PITCH_L_PWM 11
+#define PITCH_EndSwitch 1
 
 // Roll
 #define ROLL_EN 8
@@ -17,7 +18,7 @@
 #define MUX_S1 5
 #define MUX_S2 6
 #define MUX_S3 7
-#define MUX_EN 3
+#define MUX_EN 2
 #define MUX_SIGNAL A5
 
 // Max pwm byte for pwm speed
@@ -103,8 +104,10 @@ void ReadPots()
 
 // calculates the motor speeds and controls the motors
 void DriveMotors() {
+ 
 
   // Pitch forces
+  bool pEndSwitch = digitalRead(PITCH_EndSwitch);
   if (forces[1] <= pitch_dead_point_max && forces[1] >= pitch_dead_point_min) // between dead points no motor
   {
     digitalWrite(PITCH_EN, LOW); // disable motor
@@ -112,6 +115,12 @@ void DriveMotors() {
   }
   else {
     pitch_speed = map(abs(forces[1]), 0, max_pitch_force, 1, max_pitch_pwm_speed); // calculate motor speed (pwm) by force between 1 and max pwm speed
+
+    // reduce force on end position
+    if(pEndSwitch){
+      pitch_speed=pitch_speed/4;
+    }
+    
     // which direction?
     if (forces[1] > pitch_dead_point_max) {
       digitalWrite(PITCH_EN, HIGH);          // enable motor
