@@ -12,20 +12,13 @@
 #define POTI_ROLL A0
 #define POTI_PITCH A1
 
-// Speed calculation
-int roll_speed = 0;
-int pitch_speed = 0;
-
-// multiplexer for buttons, not finished yet!
-// Mux
+// multiplexer for buttons
 #define MUX_S0 4
 #define MUX_S1 5
 #define MUX_S2 6
 #define MUX_S3 7
 #define MUX_EN 3
 #define MUX_SIGNAL A5
-
-// Some other definitions
 
 // Max pwm byte for pwm speed
 #define max_pitch_pwm_speed  150
@@ -41,8 +34,9 @@ int pitch_speed = 0;
 #define pitch_dead_point_min -50
 #define pitch_dead_point_max 50
 
-// Buttons
-#define button_right_trim_up 0b00001111
+// Speed calculation
+int roll_speed = 0;
+int pitch_speed = 0;
 
 void ArduinoSetup()
 {
@@ -98,14 +92,12 @@ void ReadPots()
   pos[1] = map(analogRead(POTI_PITCH), 0, 1023, minX, maxX);
   pos_updated = true;
 
-#ifdef DEBUG
-  Serial.print("\tPO_ROLL:");
-  Serial.print(pos[0]);
-  Serial.print("\tPO_PITCH:");
-  Serial.print(pos[1]);
-#endif
-
-
+  #ifdef DEBUG
+    Serial.print("\tPO_ROLL:");
+    Serial.print(pos[0]);
+    Serial.print("\tPO_PITCH:");
+    Serial.print(pos[1]);
+  #endif
 }//ReadPots
 
 
@@ -151,62 +143,89 @@ void DriveMotors() {
     }
   }
 
-#ifdef DEBUG
-  Serial.print("\troll_sp:");
-  Serial.print(roll_speed);
-  Serial.print("\tpitch_sp:");
-  Serial.print(pitch_speed);
-#endif
+  #ifdef DEBUG
+    Serial.print("\troll_sp:");
+    Serial.print(roll_speed);
+    Serial.print("\tpitch_sp:");
+    Serial.print(pitch_speed);
+  #endif
 } //DriveMotors
 
 bool readMux(bool s0, bool s1, bool s2, bool s3)
 {
+  // set mux channel
   digitalWrite(MUX_S0, s0);
   digitalWrite(MUX_S1, s1);
   digitalWrite(MUX_S2, s2);
   digitalWrite(MUX_S3, s3);
-    
-
-    
+  // enable mux (pleparation for additional muxers for e.g. force adjustments or so)   
   digitalWrite(MUX_EN, LOW);
+  // read value
   bool val = digitalRead(MUX_SIGNAL);
-//      Serial.print("b:");
-//    Serial.print(s0);
-//    Serial.print(",");
-//    Serial.print(s1);
-//    Serial.print(",");
-//    Serial.print(s2);
-//    Serial.print(",");
-//    Serial.print(s3);
-//    Serial.print(",");
-//    Serial.print(val);
-//    Serial.print("\n");
-    
+  // disblae mux
   digitalWrite(MUX_EN, HIGH);
+   
   return val;
-}
+} //readMux
 
 // Reads the button states over multiplexer
-// Must be done in this way because of memory issues
-// not finished yet
 void updateJoystickButtons() {
-//
-//  bool val = readMux(bitRead(button_right_trim_up, 0), bitRead(button_right_trim_up, 1), bitRead(button_right_trim_up, 2), bitRead(button_right_trim_up, 3));
-//  Serial.print("\tButton:");
-//  Serial.print(val);
-//  Serial.print("\t");
-//  Joystick.setButton(0, val);
+    // read hat states from multiplexer channel 0-3
+    bool hat_right = readMux(0,0,0,0);
+    bool hat_down = readMux(1,0,0,0);
+    bool hat_up = readMux(0,1,0,0);
+    bool hat_left = readMux(1,1,0,0);
+    
+    #ifdef DEBUG
+        Serial.print("\thr:");
+        Serial.print(hat_right);
+        Serial.print("\thd:");
+        Serial.print(hat_down);
+        Serial.print("\thu:");
+        Serial.print(hat_up);
+        Serial.print("\thl:");
+        Serial.print(hat_left);
+    #endif
 
-  for (int channel = 0; channel < 16; channel++)
-  {
-    bool val = readMux(bitRead(channel, 3), bitRead(channel, 2), bitRead(channel, 1), bitRead(channel, 0));
-//    Serial.print("b:");
-//    Serial.print(channel);
-//    Serial.print(",");
-//    Serial.print(val);
-//    Serial.print("\t");
-  
-    //Joystick.setButton(channel, readMux(bitRead(channel, 3), bitRead(channel, 2), bitRead(channel, 1), bitRead(channel, 0)));
-  }
+    //decode HatSwitch Positions
+    if(hat_up == false &&  hat_right == false && hat_down == false && hat_left == false)
+        Joystick.setHatSwitch(0, -1); // no direction
 
-} //ReadMux
+    if(hat_up == true &&  hat_right == false && hat_down == false && hat_left == false)
+       Joystick.setHatSwitch(0, 0);     // up
+
+    if(hat_up == true &&  hat_right == true && hat_down == false && hat_left == false)
+       Joystick.setHatSwitch(0, 45);    // up right
+
+    if(hat_up == false &&  hat_right == true && hat_down == false && hat_left == false)
+      Joystick.setHatSwitch(0, 90);    // right
+ 
+    if(hat_up == false &&  hat_right == true && hat_down == true && hat_left == false)
+      Joystick.setHatSwitch(0, 135);   // down right
+ 
+    if(hat_up == false &&  hat_right == false && hat_down == true && hat_left == false)
+      Joystick.setHatSwitch(0, 180);   // down
+ 
+    if(hat_up == false &&  hat_right == false && hat_down == true && hat_left == true)
+      Joystick.setHatSwitch(0, 225);   // down left
+      
+    if(hat_up == false &&  hat_right == false && hat_down == false && hat_left == true)
+       Joystick.setHatSwitch(0, 270);   // left
+
+    if(hat_up == true &&  hat_right == false && hat_down == false && hat_left == true)
+      Joystick.setHatSwitch(0, 315);  // up left 
+
+    // read button states from multiplexer
+    for (int channel = 4; channel < 16; channel++)
+    {
+      bool val = readMux(bitRead(channel, 0), bitRead(channel, 1), bitRead(channel, 2), bitRead(channel, 3));
+      #ifdef DEBUG
+        Serial.print("\tb:");
+        Serial.print(channel);
+        Serial.print(",");
+        Serial.print(val);
+      #endif
+      Joystick.setButton(channel -4, val);
+   }
+
+} //updateJoystickButtons
