@@ -48,21 +48,21 @@ void updateEffects(bool recalculate){
         #ifdef DEBUG
         //write_order(LOG);
         Serial.print(currentMillis);
-        Serial.print(" X:");
+        Serial.print("\tX:");
         Serial.print(pos[0]);
-        Serial.print(" Y:");
+        Serial.print("\tY:");
         Serial.print(pos[1]);
-        Serial.print(" Cx:");
+        Serial.print("\tCx:");
         Serial.print(positionChangeX);
-        Serial.print(", Cy");
+        Serial.print("\tCy");
         Serial.print(positionChangeY);
-        Serial.print(" Vx:");
+        Serial.print("\tVx:");
         Serial.print(velX);
-        Serial.print(", Vy:");
+        Serial.print("\tVy:");
         Serial.print(velY);
-        Serial.print(" Ax:");
+        Serial.print("\tAx:");
         Serial.print(accelX);
-        Serial.print(", Ay:");
+        Serial.print("\tAy:");
         Serial.print(accelY);
         #endif
 
@@ -86,9 +86,9 @@ void updateEffects(bool recalculate){
 
     #ifdef DEBUG
     if (diffTime > 0 && recalculate) {
-        Serial.print(" F0:");
+        Serial.print("\tF0:");
         Serial.print(forces[0]);
-        Serial.print(", F1:");
+        Serial.print("\tF1:");
         Serial.print(forces[1]);
     }
     #endif
