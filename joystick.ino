@@ -1,16 +1,13 @@
+
+
 void setupJoystick() {
-    Joystick.setXAxisRange(minX, maxX);
-    Joystick.setYAxisRange(minY, maxY);
+    Joystick.setXAxisRange(JOYSTICK_minX, JOYSTICK_maxX);
+    Joystick.setYAxisRange(JOYSTICK_minY, JOYSTICK_maxY);
     Joystick.begin();
     Gains gains[FFB_AXIS_COUNT];
     gains[0].frictionGain = friction_gain;
     gains[1].frictionGain = friction_gain;
     Joystick.setGains(gains);
-}
-
-void updateJoystickPos() {
-    Joystick.setXAxis(pos[0]);
-    Joystick.setYAxis(pos[1]);
 }
 
 void updateEffects(bool recalculate){
@@ -20,8 +17,8 @@ void updateEffects(bool recalculate){
         effects[i].damperMaxVelocity = damperMaxVelocityCfg;
     }
 
-    effects[0].springMaxPosition = maxX;
-    effects[1].springMaxPosition = maxY;
+    effects[0].springMaxPosition = JOYSTICK_maxX;
+    effects[1].springMaxPosition = JOYSTICK_maxY;
     effects[0].springPosition = pos[0];
     effects[1].springPosition = pos[1];
 

@@ -1,3 +1,9 @@
+// Poti position values from one end to another
+#define POTI_ROLL_MIN 225
+#define POTI_ROLL_MAX 790
+#define POTI_PITCH_MIN 800
+#define POTI_PITCH_MAX 1020
+
 // Pitch
 #define PITCH_EN 13
 #define PITCH_R_PWM 3
@@ -22,18 +28,14 @@
 #define MUX_SIGNAL A5
 
 // Max pwm byte for pwm speed
+#define min_pitch_pwm_speed  0
 #define max_pitch_pwm_speed  150
+#define min_roll_pwm_speed  0
 #define max_roll_pwm_speed  150
 
 // Max Force for Max PWM Speed
-#define max_pitch_force 2000
-#define max_roll_force 5000
-
-// Dead Points for the middle
-#define roll_dead_point_min -100
-#define roll_dead_point_max 100
-#define pitch_dead_point_min -50
-#define pitch_dead_point_max 50
+#define max_pitch_force 10000
+#define max_roll_force 10000
 
 // Speed calculation
 int roll_speed = 0;
@@ -42,33 +44,34 @@ int pitch_speed = 0;
 void ArduinoSetup()
 {
   // set up the Arduino pins
+  // Pitch Pins
+  pinMode(POTI_PITCH, INPUT);
   pinMode(PITCH_EN, OUTPUT);
   pinMode(PITCH_R_PWM, OUTPUT);
   pinMode(PITCH_L_PWM, OUTPUT);
-
+  // Roll Pins
+  pinMode(POTI_ROLL, INPUT);
   pinMode(ROLL_EN, OUTPUT);
   pinMode(ROLL_R_PWM, OUTPUT);
   pinMode(ROLL_L_PWM, OUTPUT);
-
-  pinMode(POTI_ROLL, INPUT);
-  pinMode(POTI_PITCH, INPUT);
-
+  // Buttons Pins (Multiplexer)
   pinMode(MUX_S0, OUTPUT);
   pinMode(MUX_S1, OUTPUT);
   pinMode(MUX_S2, OUTPUT);
   pinMode(MUX_S3, OUTPUT);
   pinMode(MUX_EN, OUTPUT);
   pinMode(MUX_SIGNAL, INPUT_PULLUP);
-
+  
   // define pin default states
+  // Pitch
   digitalWrite(PITCH_EN, LOW);
   digitalWrite(PITCH_R_PWM, LOW);
   digitalWrite(PITCH_L_PWM, LOW);
-
+  //Roll
   digitalWrite(ROLL_EN, LOW);
   digitalWrite(ROLL_R_PWM, LOW);
   digitalWrite(ROLL_L_PWM, LOW);
-
+  // Multiplexer
   digitalWrite(MUX_S0, LOW);
   digitalWrite(MUX_S1, LOW);
   digitalWrite(MUX_S2, LOW);
@@ -86,47 +89,52 @@ void ArduinoSetup()
 }
 
 // Read the axes poti values and save it
-void ReadPots()
+void updateJoystickPos()
 {
-  // read poti positions
-  pos[0] = map(analogRead(POTI_ROLL), 0, 1023, minY, maxY);
-  pos[1] = map(analogRead(POTI_PITCH), 0, 1023, minX, maxX);
-  pos_updated = true;
+  // read poti positions and map it from poti values to Joystick values
+  pos[0] = map(analogRead(POTI_ROLL), POTI_ROLL_MIN, POTI_ROLL_MAX, JOYSTICK_minY, JOYSTICK_maxY);
+  pos[1] = map(analogRead(POTI_PITCH), POTI_PITCH_MIN, POTI_PITCH_MAX, JOYSTICK_minX, JOYSTICK_maxX);
 
-  #ifdef DEBUG
-    Serial.print("\tPO_ROLL:");
+  #ifdef POTIDEBUG
+    Serial.print("\tPOTI_ROLL:");
+    Serial.print(analogRead(POTI_ROLL));
+    Serial.print("\tPOTI_Pitch]:");
+    Serial.print(analogRead(POTI_PITCH));
+      
+    Serial.print("\tRoll JoyPos:");
     Serial.print(pos[0]);
-    Serial.print("\tPO_PITCH:");
+    Serial.print("\tPitch JoyPos:");
     Serial.print(pos[1]);
-  #endif
+  #endif  
+  
+  Joystick.setXAxis(pos[0]);
+  Joystick.setYAxis(pos[1]);
+    
+  pos_updated = true;
 }//ReadPots
 
 
 // calculates the motor speeds and controls the motors
 void DriveMotors() {
- 
-
   // Pitch forces
+
+  // read Endswitch
   bool pEndSwitch = digitalRead(PITCH_EndSwitch);
-  if (forces[1] <= pitch_dead_point_max && forces[1] >= pitch_dead_point_min) // between dead points no motor
+  // 
+  if(forces[1]==0 || pEndSwitch)
   {
     digitalWrite(PITCH_EN, LOW); // disable motor
     pitch_speed = 0;             // speed to 0
   }
   else {
-    pitch_speed = map(abs(forces[1]), 0, max_pitch_force, 1, max_pitch_pwm_speed); // calculate motor speed (pwm) by force between 1 and max pwm speed
-
-    // reduce force on end position
-    if(pEndSwitch){
-      pitch_speed=pitch_speed/4;
-    }
-    
+    pitch_speed = map(abs(forces[1]), 0, max_pitch_force, min_pitch_pwm_speed, max_pitch_pwm_speed); // calculate motor speed (pwm) by force between 1 and max pwm speed
+  
     // which direction?
-    if (forces[1] > pitch_dead_point_max) {
+    if (forces[1] > 0) {
       digitalWrite(PITCH_EN, HIGH);          // enable motor
       analogWrite(PITCH_R_PWM, pitch_speed);  // speed up
     }
-    if (forces[1] < pitch_dead_point_min) {
+    else{
       digitalWrite(PITCH_EN, HIGH);          // enable motor
       analogWrite(PITCH_L_PWM, pitch_speed);  // speed up
     }
@@ -134,19 +142,19 @@ void DriveMotors() {
 
 
   // Roll forces
-  if (forces[0] <= roll_dead_point_max && forces[0] >= roll_dead_point_min) // between dead points no motor
+  if (forces[0] == 0) // between dead points no motor
   {
     digitalWrite(ROLL_EN, LOW); // disable motor
     roll_speed = 0;             // speed to 0
   }
   else {
-    roll_speed = map(abs(forces[0]), 0, max_roll_force, 1, max_roll_pwm_speed); // calculate motor speed (pwm) by force between 1 and max pwm speed
+    roll_speed = map(abs(forces[0]), 0, max_roll_force, min_roll_pwm_speed, max_roll_pwm_speed); // calculate motor speed (pwm) by force between 1 and max pwm speed
     // which direction?
-    if (forces[0] > roll_dead_point_max) {
+    if (forces[0] > 0) {
       digitalWrite(ROLL_EN, HIGH);          // enable motor
       analogWrite(ROLL_L_PWM, roll_speed);  // speed up
     }
-    if (forces[0] < roll_dead_point_min) {
+    else{
       digitalWrite(ROLL_EN, HIGH);          // enable motor
       analogWrite(ROLL_R_PWM, roll_speed);  // speed up
     }
@@ -185,7 +193,7 @@ void updateJoystickButtons() {
     bool hat_up = readMux(0,1,0,0);
     bool hat_left = readMux(1,1,0,0);
     
-    #ifdef DEBUG
+    #ifdef BUTTONDEBUG
         Serial.print("\thr:");
         Serial.print(hat_right);
         Serial.print("\thd:");
@@ -228,7 +236,7 @@ void updateJoystickButtons() {
     for (int channel = 4; channel < 16; channel++)
     {
       bool val = readMux(bitRead(channel, 0), bitRead(channel, 1), bitRead(channel, 2), bitRead(channel, 3));
-      #ifdef DEBUG
+      #ifdef BUTTONDEBUG
         Serial.print("\tb:");
         Serial.print(channel);
         Serial.print(",");

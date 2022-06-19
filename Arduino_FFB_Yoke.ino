@@ -1,6 +1,12 @@
-#define NODEBUG
+// gerneral debug info (forces)
+#define DEBUG
+// Button Debug Info
+#define NOBUTTONDEBUG
+// Poti Debuginfo
+#define NOPOTIDEBUG
+
 #ifdef _VARIANT_ARDUINO_DUE_X_
-#define Serial SerialUSB
+  #define Serial SerialUSB
 #endif
 
 // the digits mean Mmmmrrr (M=Major,m=minor,r=revision)
@@ -20,10 +26,10 @@ unsigned long nextEffectsMillis;
 // --------------------------
 // Joystick related variables
 // --------------------------
-#define minX -32768
-#define maxX 32767
-#define minY -32768
-#define maxY 32767
+#define JOYSTICK_minX -32768
+#define JOYSTICK_maxX 32767
+#define JOYSTICK_minY -32768
+#define JOYSTICK_maxY 32767
 
 bool is_connected = false;
 bool forces_requested = false;
@@ -40,10 +46,6 @@ int lastAccelY;
 EffectParams effects[2];
 int32_t forces[2] = {0, 0};
 
-// Buttons for Yoke
-//int16_t buttons_YokeHatSwitch = -1;
-//uint8_t buttons_Yoke[12] = {0,0,0,0,0,0,0,0,0,0,0,0};
-
 Joystick_ Joystick(
     JOYSTICK_DEFAULT_REPORT_ID, JOYSTICK_TYPE_JOYSTICK,
     12, 1, // Button Count, Hat Switch Count
@@ -57,7 +59,10 @@ void setup() {
     setupJoystick();
 
     // setup communication
-    #if defined(COMINO) || defined(DEBUG)
+    #if defined(COMINO) 
+      || defined(DEBUG)
+      || defined(POTIDEBUG)
+      || defined(BUTTONDEBUG)
       Serial.begin(SERIAL_BAUD);
     #endif
 
@@ -67,9 +72,8 @@ void setup() {
     nextEffectsMillis = 0;
 }
 
+
 void loop(){
-    ReadPots();
-    
     unsigned long currentMillis;
     currentMillis = millis();
     // do not run more frequently than these many milliseconds
