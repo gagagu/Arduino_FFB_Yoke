@@ -1,4 +1,6 @@
 // Poti position values from one end to another
+// You have to read out these Values in Debug Mode and without Power to the Motors
+// and insert it there. 
 #define POTI_ROLL_MIN 285
 #define POTI_ROLL_MAX 880
 #define POTI_PITCH_MIN 555
