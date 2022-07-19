@@ -14,6 +14,7 @@
 #define ROLL_EN 8
 #define ROLL_R_PWM 9
 #define ROLL_L_PWM 10
+#define ROLL_EndSwitch 12
 
 //Potis
 #define POTI_ROLL A0
@@ -142,7 +143,10 @@ void DriveMotors() {
 
 
   // Roll forces
-  if (forces[0] == 0) // between dead points no motor
+  // read Endswitch
+  bool rEndSwitch = digitalRead(ROLL_EndSwitch);
+  //  
+  if (forces[0] == 0 || rEndSwitch) // between dead points no motor
   {
     digitalWrite(ROLL_EN, LOW); // disable motor
     roll_speed = 0;             // speed to 0
