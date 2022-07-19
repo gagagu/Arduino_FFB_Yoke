@@ -1,8 +1,8 @@
 // Poti position values from one end to another
-#define POTI_ROLL_MIN 225
-#define POTI_ROLL_MAX 790
-#define POTI_PITCH_MIN 800
-#define POTI_PITCH_MAX 1020
+#define POTI_ROLL_MIN 285
+#define POTI_ROLL_MAX 880
+#define POTI_PITCH_MIN 555
+#define POTI_PITCH_MAX 748
 
 // Pitch
 #define PITCH_EN 13
@@ -45,16 +45,21 @@ int pitch_speed = 0;
 void ArduinoSetup()
 {
   // set up the Arduino pins
+  
   // Pitch Pins
   pinMode(POTI_PITCH, INPUT);
   pinMode(PITCH_EN, OUTPUT);
   pinMode(PITCH_R_PWM, OUTPUT);
   pinMode(PITCH_L_PWM, OUTPUT);
+  pinMode(PITCH_EndSwitch, INPUT_PULLUP);
+    
   // Roll Pins
   pinMode(POTI_ROLL, INPUT);
   pinMode(ROLL_EN, OUTPUT);
   pinMode(ROLL_R_PWM, OUTPUT);
   pinMode(ROLL_L_PWM, OUTPUT);
+  pinMode(ROLL_EndSwitch, INPUT_PULLUP);
+    
   // Buttons Pins (Multiplexer)
   pinMode(MUX_S0, OUTPUT);
   pinMode(MUX_S1, OUTPUT);
@@ -92,20 +97,30 @@ void ArduinoSetup()
 // Read the axes poti values and save it
 void updateJoystickPos()
 {
-  // read poti positions and map it from poti values to Joystick values
-  pos[0] = map(analogRead(POTI_ROLL), POTI_ROLL_MIN, POTI_ROLL_MAX, JOYSTICK_minY, JOYSTICK_maxY);
-  pos[1] = map(analogRead(POTI_PITCH), POTI_PITCH_MIN, POTI_PITCH_MAX, JOYSTICK_minX, JOYSTICK_maxX);
+  int pot_roll=analogRead(POTI_ROLL);
+  int pot_pitch=analogRead(POTI_PITCH);
 
-  #ifdef POTIDEBUG
+  if(pot_roll < POTI_ROLL_MIN)
+    pot_roll=POTI_ROLL_MIN;
+   
+  if(pot_roll > POTI_ROLL_MAX)
+    pot_roll=POTI_ROLL_MAX;
+
+  if(pot_pitch < POTI_PITCH_MIN)
+    pot_pitch=POTI_PITCH_MIN;
+   
+  if(pot_pitch > POTI_PITCH_MAX)
+    pot_pitch=POTI_PITCH_MAX;    
+  
+  // read poti positions and map it from poti values to Joystick values
+  pos[0] = map(pot_roll, POTI_ROLL_MIN, POTI_ROLL_MAX, JOYSTICK_minY, JOYSTICK_maxY);
+  pos[1] = map(pot_pitch, POTI_PITCH_MIN, POTI_PITCH_MAX, JOYSTICK_minX, JOYSTICK_maxX);
+
+  #ifdef DEBUG
     Serial.print("\tPOTI_ROLL:");
     Serial.print(analogRead(POTI_ROLL));
-    Serial.print("\tPOTI_Pitch]:");
+    Serial.print("\tPOTI_Pitch:");
     Serial.print(analogRead(POTI_PITCH));
-      
-    Serial.print("\tRoll JoyPos:");
-    Serial.print(pos[0]);
-    Serial.print("\tPitch JoyPos:");
-    Serial.print(pos[1]);
   #endif  
   
   Joystick.setXAxis(pos[0]);
@@ -118,11 +133,15 @@ void updateJoystickPos()
 // calculates the motor speeds and controls the motors
 void DriveMotors() {
   // Pitch forces
-
+  #ifdef DEBUG
+    Serial.print("\tPITCH_EndSwitch:");
+    Serial.print(digitalRead(PITCH_EndSwitch));
+    Serial.print("\tROLL_EndSwitch:");
+    Serial.print(digitalRead(ROLL_EndSwitch));
+  #endif
+  
   // read Endswitch
-  bool pEndSwitch = digitalRead(PITCH_EndSwitch);
-  // 
-  if(forces[1]==0 || pEndSwitch)
+  if(forces[1]==0 || digitalRead(PITCH_EndSwitch)==0)
   {
     digitalWrite(PITCH_EN, LOW); // disable motor
     pitch_speed = 0;             // speed to 0
@@ -144,9 +163,7 @@ void DriveMotors() {
 
   // Roll forces
   // read Endswitch
-  bool rEndSwitch = digitalRead(ROLL_EndSwitch);
-  //  
-  if (forces[0] == 0 || rEndSwitch) // between dead points no motor
+  if (forces[0] == 0 || digitalRead(ROLL_EndSwitch)==0) // between dead points no motor
   {
     digitalWrite(ROLL_EN, LOW); // disable motor
     roll_speed = 0;             // speed to 0

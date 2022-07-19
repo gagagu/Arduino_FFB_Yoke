@@ -44,7 +44,9 @@ void updateEffects(bool recalculate){
 
         #ifdef DEBUG
         //write_order(LOG);
-        Serial.print(currentMillis);
+        
+        //Serial.print("\ttime:");
+        //Serial.print(currentMillis);
         Serial.print("\tX:");
         Serial.print(pos[0]);
         Serial.print("\tY:");

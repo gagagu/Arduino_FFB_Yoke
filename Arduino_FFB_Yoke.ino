@@ -2,8 +2,6 @@
 #define DEBUG
 // Button Debug Info
 #define NOBUTTONDEBUG
-// Poti Debuginfo
-#define NOPOTIDEBUG
 
 #ifdef _VARIANT_ARDUINO_DUE_X_
   #define Serial SerialUSB
@@ -61,7 +59,6 @@ void setup() {
     // setup communication
     #if defined(COMINO) 
       || defined(DEBUG)
-      || defined(POTIDEBUG)
       || defined(BUTTONDEBUG)
       Serial.begin(SERIAL_BAUD);
     #endif
