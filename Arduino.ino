@@ -1,10 +1,10 @@
 // Poti position values from one end to another
 // You have to read out these Values in Debug Mode and without Power to the Motors
 // and insert it there. 
-#define POTI_ROLL_MIN 285
-#define POTI_ROLL_MAX 880
-#define POTI_PITCH_MIN 555
-#define POTI_PITCH_MAX 748
+#define POTI_ROLL_MIN 440
+#define POTI_ROLL_MAX 1020
+#define POTI_PITCH_MIN 325
+#define POTI_PITCH_MAX 515
 
 // Pitch
 #define PITCH_EN 13
@@ -32,9 +32,9 @@
 
 // Max pwm byte for pwm speed
 #define min_pitch_pwm_speed  0
-#define max_pitch_pwm_speed  150
+#define max_pitch_pwm_speed  200
 #define min_roll_pwm_speed  0
-#define max_roll_pwm_speed  150
+#define max_roll_pwm_speed  200
 
 // Max Force for Max PWM Speed
 #define max_pitch_force 10000

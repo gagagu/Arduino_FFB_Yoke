@@ -9,9 +9,9 @@
 #define damperSplineNumPoints 6
 
 // TODO: find proper values for these automatically
-#define frictionMaxPositionChangeCfg 25
-#define inertiaMaxAccelerationCfg 10
-#define damperMaxVelocityCfg 150
+#define frictionMaxPositionChangeCfg 125
+#define inertiaMaxAccelerationCfg 100
+#define damperMaxVelocityCfg 350
 
 // comment out this line if you don't want to have a spline configuration for the damper
 #define damperSplineGain float damperSplinePoints[2][damperSplineNumPoints] = { \

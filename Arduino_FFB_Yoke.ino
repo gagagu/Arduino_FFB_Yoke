@@ -1,5 +1,5 @@
 // gerneral debug info (forces)
-#define DEBUG
+#define NODEBUG
 // Button Debug Info
 #define NOBUTTONDEBUG
 
