@@ -2,6 +2,8 @@
 #define NODEBUG
 // Button Debug Info
 #define NOBUTTONDEBUG
+// Poti Debug Info for Serial Plotter
+#define NOPOTIDEBUG
 
 #ifdef _VARIANT_ARDUINO_DUE_X_
   #define Serial SerialUSB
@@ -60,6 +62,7 @@ void setup() {
     #if defined(COMINO) 
       || defined(DEBUG)
       || defined(BUTTONDEBUG)
+      || defined(POTIDEBUG)
       Serial.begin(SERIAL_BAUD);
     #endif
 

@@ -32,9 +32,9 @@
 
 // Max pwm byte for pwm speed
 #define min_pitch_pwm_speed  0
-#define max_pitch_pwm_speed  200
+#define max_pitch_pwm_speed  180
 #define min_roll_pwm_speed  0
-#define max_roll_pwm_speed  200
+#define max_roll_pwm_speed  180
 
 // Max Force for Max PWM Speed
 #define max_pitch_force 10000
@@ -123,6 +123,15 @@ void updateJoystickPos()
     Serial.print(analogRead(POTI_ROLL));
     Serial.print("\tPOTI_Pitch:");
     Serial.print(analogRead(POTI_PITCH));
+  #endif  
+
+  #ifdef POTIDEBUG
+    Serial.print("POTI_ROLL:");
+    Serial.print(analogRead(POTI_ROLL));
+    Serial.print(",");
+    Serial.print("POTI_Pitch:");
+    Serial.print(analogRead(POTI_PITCH));
+    Serial.println(",");
   #endif  
   
   Joystick.setXAxis(pos[0]);
