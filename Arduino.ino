@@ -1,10 +1,15 @@
 // Poti position values from one end to another
 // You have to read out these Values in Debug Mode and without Power to the Motors
 // and insert it there. 
-#define POTI_ROLL_MIN 440
-#define POTI_ROLL_MAX 1020
+#define POTI_ROLL_MIN 380
+#define POTI_ROLL_MAX 976
 #define POTI_PITCH_MIN 325
 #define POTI_PITCH_MAX 515
+
+// Test Stuff
+#define TEST_LED_PIN 0
+#define TEST_POTI_PIN A2
+#define TEST_BUTTON_PIN A3
 
 // Pitch
 #define PITCH_EN 13
@@ -31,22 +36,27 @@
 #define MUX_SIGNAL A5
 
 // Max pwm byte for pwm speed
-#define min_pitch_pwm_speed  0
-#define max_pitch_pwm_speed  180
-#define min_roll_pwm_speed  0
-#define max_roll_pwm_speed  180
+#define min_pitch_pwm_speed  40     // defines the minimum force given to the pitch, beyond you will not feel it and the deathpoitn will be too high
+#define max_pitch_pwm_speed  120    // defines the maximum force given to the pitch to reduce the power to the movement
+#define min_roll_pwm_speed  40      // defines the minimum force given to the roll, beyond you will not feel it and the deathpoitn will be too high
+#define max_roll_pwm_speed  90      // defines the maximum force given to the roll to reduce the power to the movement
 
 // Max Force for Max PWM Speed
-#define max_pitch_force 10000
-#define max_roll_force 10000
+#define max_pitch_force 5000        // maximum pitch force excepted from the system (like XPForce), beyond will set to the max value
+#define max_roll_force 5000         // maximum roll force excepted from the system (like XPForce), beyond will set to the max value
 
-// Speed calculation
+// variables for Speed calculation
 int roll_speed = 0;
 int pitch_speed = 0;
 
 void ArduinoSetup()
 {
   // set up the Arduino pins
+
+  // Test stuff
+  // pinMode(TEST_LED_PIN, OUTPUT);
+  // digitalWrite(TEST_LED_PIN, LOW);
+
   
   // Pitch Pins
   pinMode(POTI_PITCH, INPUT);
@@ -99,6 +109,14 @@ void ArduinoSetup()
 // Read the axes poti values and save it
 void updateJoystickPos()
 {
+  // Test stuff
+  //  #ifdef DEBUG
+  //    Serial.print("\tTEST POTI:");
+  //    Serial.print(analogRead(TEST_POTI_PIN));
+  //    Serial.print("\tTEST BUtton:");
+  //    Serial.print(digitalRead(TEST_BUTTON_PIN));
+  //  #endif 
+  
   int pot_roll=analogRead(POTI_ROLL);
   int pot_pitch=analogRead(POTI_PITCH);
 
@@ -125,81 +143,99 @@ void updateJoystickPos()
     Serial.print(analogRead(POTI_PITCH));
   #endif  
 
-  #ifdef POTIDEBUG
-    Serial.print("POTI_ROLL:");
-    Serial.print(analogRead(POTI_ROLL));
-    Serial.print(",");
-    Serial.print("POTI_Pitch:");
-    Serial.print(analogRead(POTI_PITCH));
-    Serial.println(",");
-  #endif  
-  
   Joystick.setXAxis(pos[0]);
   Joystick.setYAxis(pos[1]);
     
   pos_updated = true;
 }//ReadPots
 
+// Enables the motordrivers
+void EnableMotors(){
+  digitalWrite(PITCH_EN, HIGH);    
+  digitalWrite(ROLL_EN, HIGH); 
+}
+
+// Disables the motordrivers
+void DisableMotors(){
+  digitalWrite(PITCH_EN, HIGH);    
+  digitalWrite(ROLL_EN, HIGH); 
+}
+
 
 // calculates the motor speeds and controls the motors
 void DriveMotors() {
-  // Pitch forces
-  #ifdef DEBUG
-    Serial.print("\tPITCH_EndSwitch:");
-    Serial.print(digitalRead(PITCH_EndSwitch));
-    Serial.print("\tROLL_EndSwitch:");
-    Serial.print(digitalRead(ROLL_EndSwitch));
-  #endif
-  
   // read Endswitch
-  if(forces[1]==0 || digitalRead(PITCH_EndSwitch)==0)
+  if(abs(forces[1])<=10 || digitalRead(PITCH_EndSwitch)==0)
   {
-    digitalWrite(PITCH_EN, LOW); // disable motor
-    pitch_speed = 0;             // speed to 0
+    analogWrite(PITCH_L_PWM, 0);  // stop left
+    analogWrite(PITCH_R_PWM, 0);  // stop right
+    pitch_speed = 0;              // speed to 0
   }
   else {
-    pitch_speed = map(abs(forces[1]), 0, max_pitch_force, min_pitch_pwm_speed, max_pitch_pwm_speed); // calculate motor speed (pwm) by force between 1 and max pwm speed
+     int32_t pForce=constrain(abs(forces[1]),0, max_pitch_force);                             // cut force to maximum value
+     pitch_speed = map(pForce, 0, max_pitch_force, min_pitch_pwm_speed, max_pitch_pwm_speed); // calculate motor speed (pwm) by force between min pwm and max pwm speed
   
     // which direction?
     if (forces[1] > 0) {
-      digitalWrite(PITCH_EN, HIGH);          // enable motor
-      analogWrite(PITCH_R_PWM, pitch_speed);  // speed up
+      analogWrite(PITCH_R_PWM, 0);            // stop right
+      analogWrite(PITCH_L_PWM, pitch_speed);  // speed up left
     }
     else{
-      digitalWrite(PITCH_EN, HIGH);          // enable motor
-      analogWrite(PITCH_L_PWM, pitch_speed);  // speed up
+      analogWrite(PITCH_L_PWM, 0);            // stop left
+      analogWrite(PITCH_R_PWM, pitch_speed);  // speed up right
     }
   }
-
-
+  
   // Roll forces
-  // read Endswitch
-  if (forces[0] == 0 || digitalRead(ROLL_EndSwitch)==0) // between dead points no motor
+  if (abs(forces[0]) <= 10 || digitalRead(ROLL_EndSwitch)==0) // between dead points no motor
   {
-    digitalWrite(ROLL_EN, LOW); // disable motor
-    roll_speed = 0;             // speed to 0
+    analogWrite(ROLL_L_PWM, 0);  // stop left
+    analogWrite(ROLL_R_PWM, 0);  // stop right
+    roll_speed = 0;              // speed to 0
   }
   else {
-    roll_speed = map(abs(forces[0]), 0, max_roll_force, min_roll_pwm_speed, max_roll_pwm_speed); // calculate motor speed (pwm) by force between 1 and max pwm speed
+    int32_t rForce=constrain(abs(forces[0]),0, max_roll_force);                          // cut force to maximum value
+    roll_speed = map(rForce, 0, max_roll_force, min_roll_pwm_speed, max_roll_pwm_speed); // calculate motor speed (pwm) by force between min pwm and max pwm speed
+    
     // which direction?
     if (forces[0] > 0) {
-      digitalWrite(ROLL_EN, HIGH);          // enable motor
-      analogWrite(ROLL_L_PWM, roll_speed);  // speed up
+      analogWrite(ROLL_R_PWM, 0);           // stop right
+      analogWrite(ROLL_L_PWM, roll_speed);  // speed up left
     }
     else{
-      digitalWrite(ROLL_EN, HIGH);          // enable motor
-      analogWrite(ROLL_R_PWM, roll_speed);  // speed up
+      analogWrite(ROLL_L_PWM, 0);           // stop left
+      analogWrite(ROLL_R_PWM, roll_speed);  // speed up right
     }
   }
+
+
+
+  // test stuff
+  //  if (analogRead(TEST_POTI_PIN) == 0 || digitalRead(ROLL_EndSwitch)==0) // between dead points no motor                                                                        
+  //  {
+  //    digitalWrite(ROLL_EN, LOW); // disable motor
+  //    roll_speed = 0;             // speed to 0
+  //  }
+  //  else {
+  //    roll_speed =  analogRead(TEST_POTI_PIN);
+  //    
+  //       digitalWrite(ROLL_EN, HIGH);          // enable motor
+  //      analogWrite(ROLL_L_PWM, roll_speed);  // speed up
+  //
+  //  }
+
+ 
 
   #ifdef DEBUG
     Serial.print("\troll_sp:");
-    Serial.print(roll_speed);
+    Serial.print(roll_speed);                                                                                                                                 
     Serial.print("\tpitch_sp:");
     Serial.print(pitch_speed);
   #endif
 } //DriveMotors
 
+
+// Reads a Values from the multiplexer
 bool readMux(bool s0, bool s1, bool s2, bool s3)
 {
   // set mux channel

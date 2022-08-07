@@ -1,9 +1,7 @@
 // gerneral debug info (forces)
-#define NODEBUG
+#define DEBUG
 // Button Debug Info
 #define NOBUTTONDEBUG
-// Poti Debug Info for Serial Plotter
-#define NOPOTIDEBUG
 
 #ifdef _VARIANT_ARDUINO_DUE_X_
   #define Serial SerialUSB
@@ -62,7 +60,6 @@ void setup() {
     #if defined(COMINO) 
       || defined(DEBUG)
       || defined(BUTTONDEBUG)
-      || defined(POTIDEBUG)
       Serial.begin(SERIAL_BAUD);
     #endif
 
@@ -70,12 +67,16 @@ void setup() {
     lastEffectsUpdate = 0;
     nextJoystickMillis = 0;
     nextEffectsMillis = 0;
+
+    // Enable the motordrivers
+    EnableMotors();
 }
 
 
 void loop(){
     unsigned long currentMillis;
     currentMillis = millis();
+    
     // do not run more frequently than these many milliseconds
     if (currentMillis >= nextJoystickMillis) {
         updateJoystickPos();
@@ -87,6 +88,7 @@ void loop(){
             updateEffects(true);
             nextEffectsMillis = currentMillis + 100;
             pos_updated = false;
+            
         } else {
             // calculate forces without recalculating condition forces
             // this helps having smoother spring/damper/friction
@@ -97,6 +99,5 @@ void loop(){
     }
 
     DriveMotors();
-    
     Serial.println("");
 }
