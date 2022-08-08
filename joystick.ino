@@ -5,22 +5,24 @@ void setupJoystick() {
     Joystick.setYAxisRange(JOYSTICK_minY, JOYSTICK_maxY);
     Joystick.begin();
     Gains gains[FFB_AXIS_COUNT];
-    gains[0].frictionGain = friction_gain;
-    gains[1].frictionGain = friction_gain;
+    gains[MEM_ROLL].frictionGain = friction_gain;
+    gains[MEM_PITCH].frictionGain = friction_gain;
     Joystick.setGains(gains);
 }
 
 void updateEffects(bool recalculate){
-    for (int i =0; i < 2; i++) {
+    for (int i =0; i < MEM_AXES; i++) {
         effects[i].frictionMaxPositionChange = frictionMaxPositionChangeCfg;
         effects[i].inertiaMaxAcceleration = inertiaMaxAccelerationCfg;
         effects[i].damperMaxVelocity = damperMaxVelocityCfg;
     }
 
-    effects[0].springMaxPosition = JOYSTICK_maxX;
-    effects[1].springMaxPosition = JOYSTICK_maxY;
-    effects[0].springPosition = pos[0];
-    effects[1].springPosition = pos[1];
+    //If you need to use the spring effect, set the following parameters.`Position` is the current position of the force feedback axis. 
+    //For example, connect the encoder with the action axis,the current encoder value is `Positon` and the max encoder value is `MaxPosition`.
+    effects[MEM_ROLL].springMaxPosition = JOYSTICK_maxX;
+    effects[MEM_PITCH].springMaxPosition = JOYSTICK_maxY;
+    effects[MEM_ROLL].springPosition = pos[MEM_ROLL];
+    effects[MEM_PITCH].springPosition = pos[MEM_PITCH];
 
     unsigned long currentMillis;
     currentMillis = millis();
@@ -34,13 +36,21 @@ void updateEffects(bool recalculate){
         int16_t velY = positionChangeY / diffTime;
         int16_t accelX = ((velX - lastVelX) * 10) / diffTime;
         int16_t accelY = ((velY - lastVelY) * 10) / diffTime;
-    
-        effects[0].frictionPositionChange = velX;
-        effects[1].frictionPositionChange = velY;
-        effects[0].inertiaAcceleration = accelX;
-        effects[1].inertiaAcceleration = accelY;
-        effects[0].damperVelocity = velX;
-        effects[1].damperVelocity = velY;
+
+        //If you need to use the friction effect, set the following parameters.`PositionChange` 
+        //is the position difference of the force feedback axis.
+        //effects[MEM_ROLL].frictionPositionChange = velX;
+        //effects[MEM_PITCH].frictionPositionChange = velY;
+        effects[MEM_ROLL].frictionPositionChange = positionChangeX;
+        effects[MEM_PITCH].frictionPositionChange = positionChangeY;
+
+        //If you need to use the damper effect, set the following parameters.`Velocity` is the current velocity of the force feedback axis.
+        effects[MEM_ROLL].inertiaAcceleration = accelX;
+        effects[MEM_PITCH].inertiaAcceleration = accelY;
+
+       //If you need to use the inertia effect, set the following parameters.`Acceleration` is the current acceleration of the force feedback axis.
+        effects[MEM_ROLL].damperVelocity = velX;
+        effects[MEM_PITCH].damperVelocity = velY;
 
         #ifdef DEBUG
         //write_order(LOG);
@@ -48,9 +58,9 @@ void updateEffects(bool recalculate){
         //Serial.print("\ttime:");
         //Serial.print(currentMillis);
         Serial.print("\tX:");
-        Serial.print(pos[0]);
+        Serial.print(pos[MEM_ROLL]);
         Serial.print("\tY:");
-        Serial.print(pos[1]);
+        Serial.print(pos[MEM_PITCH]);
         Serial.print("\tCx:");
         Serial.print(positionChangeX);
         Serial.print("\tCy");
@@ -65,19 +75,19 @@ void updateEffects(bool recalculate){
         Serial.print(accelY);
         #endif
 
-        lastX = pos[0];
-        lastY = pos[1];
+        lastX = pos[MEM_ROLL];
+        lastY = pos[MEM_PITCH];
         lastVelX = velX;
         lastVelY = velY;
         lastAccelX = accelX;
         lastAccelY = accelY;
     } else {
-        effects[0].frictionPositionChange = lastVelX;
-        effects[1].frictionPositionChange = lastVelY;
-        effects[0].inertiaAcceleration = lastAccelX;
-        effects[1].inertiaAcceleration = lastAccelY;
-        effects[0].damperVelocity = lastVelX;
-        effects[1].damperVelocity = lastVelY;
+        effects[MEM_ROLL].frictionPositionChange = lastVelX;
+        effects[MEM_PITCH].frictionPositionChange = lastVelY;
+        effects[MEM_ROLL].inertiaAcceleration = lastAccelX;
+        effects[MEM_PITCH].inertiaAcceleration = lastAccelY;
+        effects[MEM_ROLL].damperVelocity = lastVelX;
+        effects[MEM_PITCH].damperVelocity = lastVelY;
     }
 
     Joystick.setEffectParams(effects);
@@ -86,9 +96,9 @@ void updateEffects(bool recalculate){
     #ifdef DEBUG
     if (diffTime > 0 && recalculate) {
         Serial.print("\tF0:");
-        Serial.print(forces[0]);
+        Serial.print(forces[MEM_ROLL]);
         Serial.print("\tF1:");
-        Serial.print(forces[1]);
+        Serial.print(forces[MEM_PITCH]);
     }
     #endif
 }

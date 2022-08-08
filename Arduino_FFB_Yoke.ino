@@ -29,11 +29,15 @@ unsigned long nextEffectsMillis;
 #define JOYSTICK_minY -32768
 #define JOYSTICK_maxY 32767
 
+#define MEM_ROLL  0
+#define MEM_PITCH  1
+#define MEM_AXES  2
+
 bool is_connected = false;
 bool forces_requested = false;
 bool pos_updated = false;
 
-int16_t pos[2] = {0, 0};
+int16_t pos[MEM_AXES] = {0, 0};
 int lastX;
 int lastY;
 int lastVelX;
@@ -42,7 +46,7 @@ int lastAccelX;
 int lastAccelY;
 
 EffectParams effects[2];
-int32_t forces[2] = {0, 0};
+int32_t forces[MEM_AXES] = {0, 0};
 
 Joystick_ Joystick(
     JOYSTICK_DEFAULT_REPORT_ID, JOYSTICK_TYPE_JOYSTICK,

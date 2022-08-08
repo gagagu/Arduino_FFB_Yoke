@@ -36,7 +36,7 @@
 #define MUX_SIGNAL A5
 
 // Max pwm byte for pwm speed
-#define min_pitch_pwm_speed  40     // defines the minimum force given to the pitch, beyond you will not feel it and the deathpoitn will be too high
+#define min_pitch_pwm_speed  70     // defines the minimum force given to the pitch, beyond you will not feel it and the deathpoitn will be too high
 #define max_pitch_pwm_speed  120    // defines the maximum force given to the pitch to reduce the power to the movement
 #define min_roll_pwm_speed  40      // defines the minimum force given to the roll, beyond you will not feel it and the deathpoitn will be too high
 #define max_roll_pwm_speed  90      // defines the maximum force given to the roll to reduce the power to the movement
