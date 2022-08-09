@@ -39,10 +39,10 @@ void updateEffects(bool recalculate){
 
         //If you need to use the friction effect, set the following parameters.`PositionChange` 
         //is the position difference of the force feedback axis.
-        //effects[MEM_ROLL].frictionPositionChange = velX;
-        //effects[MEM_PITCH].frictionPositionChange = velY;
-        effects[MEM_ROLL].frictionPositionChange = positionChangeX;
-        effects[MEM_PITCH].frictionPositionChange = positionChangeY;
+        effects[MEM_ROLL].frictionPositionChange = velX;
+        effects[MEM_PITCH].frictionPositionChange = velY;
+        //effects[MEM_ROLL].frictionPositionChange = positionChangeX;
+        //effects[MEM_PITCH].frictionPositionChange = positionChangeY;
 
         //If you need to use the damper effect, set the following parameters.`Velocity` is the current velocity of the force feedback axis.
         effects[MEM_ROLL].inertiaAcceleration = accelX;
@@ -55,8 +55,8 @@ void updateEffects(bool recalculate){
         #ifdef DEBUG
         //write_order(LOG);
         
-        //Serial.print("\ttime:");
-        //Serial.print(currentMillis);
+        Serial.print("\ttime:");
+        Serial.print(currentMillis);
         Serial.print("\tX:");
         Serial.print(pos[MEM_ROLL]);
         Serial.print("\tY:");
