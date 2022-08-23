@@ -36,6 +36,9 @@ leonardo.build.vid=0x9998
 leonardo.build.pid=0x9998
 leonardo.build.usb_product="Arduino FFB Yoke"
 
+## Calibration
+The newest Version of the code uses a calibration routine for measure the Potentiometer Values on all directions. I will be started on power on and by pressing the button (see Schematic image). The LED will blinking to indicate this mode. You have to move the Yoke to all direction till the end switches will trigger. After all axes will done the calibration is finished and the LED blinking will end.
+
 ## Ref
 This project is a combination of several existing github projects and 3d Models from Thingiverse.com
 
