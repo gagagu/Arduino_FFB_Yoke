@@ -1,6 +1,6 @@
 // gerneral debug info (forces)
 // change NODEBUG to DEBUG to activae debug output on serial
-#define NODEBUG
+#define DEBUG
 
 // Button Debug Info
 #define NOBUTTONDEBUG
@@ -38,8 +38,8 @@ unsigned long nextEffectsMillis;
 bool is_connected = false;
 bool forces_requested = false;
 bool pos_updated = false;
-bool calibration_init = false;
-bool calibration_init_start = false;
+//bool calibration_init = false;
+///bool calibration_init_start = false;
 
 int16_t pos[MEM_AXES] = {0, 0};
 int lastX;
@@ -75,8 +75,8 @@ void setup() {
     nextEffectsMillis = 0;
 
     // start calibration
-    calibration_init_start =false;
-    calibration_init=true;
+    //calibration_init_start =false;
+    //calibration_init=false;
 }
 
 /******************************
@@ -87,43 +87,43 @@ void loop(){
     currentMillis = millis();
     
     // calibration mode button pressed?
-    if(!calibration_init){
-      calibration_init = CheckCalibrationActivation();
-    }
+    //if(!calibration_init){
+      //calibration_init = CheckCalibrationActivation();
+    //}
 
     // init mode activated?
-    if(calibration_init)
-    {
+    //if(calibration_init)
+   // {
       // init calibration mode
-      if(!calibration_init_start)
-      {
-        calibration_init_start=true;
-        DisableMotors();    // disable motor movement
-        ResetPotiValues();  // delet old poti max min values
+     // if(!calibration_init_start)
+      //{
+       // calibration_init_start=true;
+       // DisableMotors();    // disable motor movement
+       // ResetPotiValues();  // delet old poti max min values
         
-        #ifdef DEBUG
-          Serial.println("Calibration mode activated, waiting for Axes movement:");
-        #endif
-      }
+       // #ifdef DEBUG
+       //   Serial.println("Calibration mode activated, waiting for Axes movement:");
+       // #endif
+     // }
       
       // LED Blinking to indicate calibration mode
-      if (currentMillis >= nextJoystickMillis) {
-        LedSwitch();
-        nextJoystickMillis = currentMillis + 10000;
-      }
+      //if (currentMillis >= nextJoystickMillis) {
+      //  LedSwitch();
+      //  nextJoystickMillis = currentMillis + 10000;
+     // }
 
       // read poti values and save it
-      if(CalibrationRollPoti() && CalibrationPitchPoti())
-      {
+    //  if(CalibrationRollPoti() && CalibrationPitchPoti())
+    //  {
         // if finished than disable mode
-        LedOn();
-        calibration_init=false;
-        calibration_init_start=false;
-        #ifdef DEBUG
-          Serial.println("Init mode ended.");
-        #endif
-      }
-    } else { // normal mode
+     //   LedOn();
+     //   calibration_init=false;
+    //    calibration_init_start=false;
+    //    #ifdef DEBUG
+     //     Serial.println("Init mode ended.");
+     //   #endif
+     // }
+    //} else { // normal mode
       // do not run more frequently than these many milliseconds
       if (currentMillis >= nextJoystickMillis) {
           UpdateJoystickPos();
@@ -150,5 +150,5 @@ void loop(){
       #if defined(DEBUG) || defined(BUTTONDEBUG)     
         Serial.println("");
       #endif
-    }
+    //}
 }
