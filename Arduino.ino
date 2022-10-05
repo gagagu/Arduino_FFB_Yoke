@@ -16,9 +16,9 @@
 // #define TEST_POTI_PIN A2
 
 // Pitch Motordriver pins
-#define PITCH_EN 13
-#define PITCH_R_PWM 3
-#define PITCH_L_PWM 11
+#define PITCH_EN 11
+#define PITCH_R_PWM 6
+#define PITCH_L_PWM 13
 #define PITCH_EndSwitch 1
 
 // Roll Motordriver pins
@@ -34,7 +34,7 @@
 // multiplexer for buttons
 #define MUX_S0 4
 #define MUX_S1 5
-#define MUX_S2 6
+#define MUX_S2 3
 #define MUX_S3 7
 #define MUX_EN 2
 #define MUX_SIGNAL A5
@@ -105,10 +105,10 @@ void ArduinoSetup()
   // This sets the PWM Speed to maximun for noise reduction
 
   // timer 1B: pin 9 & 10
-  TCCR1B = _BV(CS00); // change the PWM frequencey to 31.25kHz   - pins 9 & 10
+  TCCR1B = _BV(CS10); // change the PWM frequencey to 31.25kHz   - pins 9 & 10
 
-  // timer 0B : pin 3 & 11
-  TCCR0B = _BV(CS00); // change the PWM frequencey to 31.25 kHz  - pin 3 & 11
+  // timer 0B : pin 13 & 6
+  TCCR4B = _BV(CS40); // change the PWM frequencey to 31.25 kHz  - pin 6 & 13
 }
 
 /***************
@@ -133,124 +133,6 @@ void LedOff()
 void LedSwitch(){
    digitalWrite(CALIBRATION_LED_PIN, !digitalRead(CALIBRATION_LED_PIN));
 }
-
-/***************
-// is calibration button pressed?
-****************/
-//bool CheckCalibrationActivation(){
-//    if(digitalRead(CALIBRATION_BUTTON_PIN)==0)
-//    {
-//      return true;
-//    }else{
-//      return false;  
-//    }
-//}
-
-/***************************
-// Reset Poti max min values
-****************************/
-//void ResetPotiValues(){
-//  poti_roll_min = JOYSTICK_minY;
-//  poti_roll_max = JOYSTICK_maxY;
-//  poti_pitch_min = JOYSTICK_minX;
-//  poti_pitch_max = JOYSTICK_maxY;
-//}
-
-/****************************************
-// detect min and max poti value for Roll
-****************************************/
-//bool CalibrationRollPoti(){
-//  // already calibrated?
-//  if(poti_roll_min > 0 and poti_roll_max >0)
-//      return true;
-//  else{
-//      // debounce endswitch
-//      if(last_roll_endswitch && digitalRead(ROLL_EndSwitch)==0)
-//        return false;
-//
-//      // is endswitch reached?
-//      if(digitalRead(ROLL_EndSwitch)==0)
-//      {
-//        // remember for debounce
-//        last_roll_endswitch = true;
-//        // read poti value
-//        int rVal=analogRead(POTI_ROLL);
-//
-//        // measure space between poti values
-//        // if too short ignore it
-//        if(abs(rVal-poti_roll_max) <= 10)
-//            return false;
-//
-//        // save first and secodn value
-//        if(rVal > poti_roll_max)
-//        {
-//          poti_roll_min = poti_roll_max;
-//          poti_roll_max = rVal;
-//        }else{
-//          poti_roll_min = rVal;
-//        }
-//
-//        #ifdef DEBUG
-//          Serial.print("\trVal:");
-//          Serial.print(rVal);
-//          Serial.print("\tpoti_roll_min:");
-//          Serial.print(poti_roll_min);
-//          Serial.print("\tpoti_roll_max:");
-//          Serial.print(poti_roll_max);        
-//          Serial.println("");
-//        #endif
-//      }
-//      return false;
-//  } // if poti
-//} // InitRollPoti
-
-/*****************************************
-// detect min and max poti value for Pitch
-*****************************************/
-//bool CalibrationPitchPoti(){
-//   // already calibrated?
-//  if(poti_pitch_min > 0 and poti_pitch_max >0)
-//      return true;
-//  else{
-//      // debounce endswitch
-//      if(last_pitch_endswitch && digitalRead(PITCH_EndSwitch)==0)
-//        return false;
-//        
-//      // is endswitch reached?
-//      if(digitalRead(PITCH_EndSwitch)==0)
-//      {
-//        // remember for debounce
-//        last_pitch_endswitch = true;
-//        // read poti value
-//        int pVal=analogRead(POTI_PITCH);
-//
-//        // measure space between poti values
-//        // if too short ignore it
-//        if(abs(pVal-poti_pitch_max) <= 10)
-//            return false;
-//            
-//        // save first and secodn value
-//        if(pVal > poti_pitch_max)
-//        {
-//          poti_pitch_min = poti_pitch_max;
-//          poti_pitch_max = pVal;
-//        }else{
-//          poti_pitch_min = pVal;
-//        }
-//        
-//        #ifdef DEBUG        
-//          Serial.print("\tpVal:");
-//          Serial.print(pVal);
-//          Serial.print("\tpoti_pitch_min:");
-//          Serial.print(poti_pitch_min);
-//          Serial.print("\tpoti_pitch_max:");
-//          Serial.print(poti_pitch_max);        
-//          Serial.println("");
-//        #endif
-//      }
-//      return false;
-//  } // if poti
-//} // InitPitchPoti
 
 /****************************************
 // Read the axes poti values and save it
@@ -327,16 +209,7 @@ void DisableMotors(){
 ******************************************************/
 void DriveMotors() {
   
-  // safety ckeck
-  // if potis not calibrated no motor movement
-//  if((poti_pitch_min==0 && poti_pitch_max==0) || (poti_roll_min==0 && poti_roll_max==0))
-//  {
-//    DisableMotors();
-//    calibration_init = true; // start calibration mode    
-//    return;
-//  }
-
-  
+ 
   // read Endswitch
   if(abs(forces[1])<=10 || digitalRead(PITCH_EndSwitch)==0)
   {
