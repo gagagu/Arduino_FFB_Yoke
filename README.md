@@ -25,7 +25,7 @@ Example:
 Also you can define the USB Name of the Joystick by changing the boards.txt file normally found in
 #### C:\Program Files (x86)\Arduino\hardware\arduino\avr\boards.txt
 #### or
-#### C:\Users\(your username)\AppData\Local\Arduino15\packages\arduino\hardware\avr\1.8.5\boards.txt
+#### C:\Users\your username\AppData\Local\Arduino15\packages\arduino\hardware\avr\1.8.5\boards.txt
 
 #### find:
 leonardo.build.vid=0x2341
