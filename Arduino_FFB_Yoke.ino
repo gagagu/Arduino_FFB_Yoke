@@ -8,7 +8,10 @@
   Disable: add "NO" letter before
 *************************/
 
-#define DEBUG       // gerneral debug info for Joystick, Please use the Arduino_FFB_Yoke_App for read out
+
+#define NODEBUG       // gerneral debug info for Joystick, Please use the Arduino_FFB_Yoke_App for read out
+                      // change to DEBUG to enable debugging
+                      // change to NODEBUG to disable debugging
 
 /**** END DEBUG INFO *********************/
 
