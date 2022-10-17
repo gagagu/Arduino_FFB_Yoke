@@ -460,7 +460,8 @@ void Joystick_::begin(bool initAutoSendState)
 {
 	_autoSendState = initAutoSendState;
 	sendState();
-    for (int i=0; i <= FFB_AXIS_COUNT; ++i)
+    //for (int i=0; i <= FFB_AXIS_COUNT; ++i) // BUG?
+    for (int i=0; i < FFB_AXIS_COUNT; ++i)
     {
         damperFilter[i] = LowPassFilter(cutoff_freq_damper, sampling_time_damper);
         inertiaFilter[i] = LowPassFilter(cutoff_freq_damper, sampling_time_damper);

@@ -56,7 +56,7 @@
 #define JOYSTICK_TYPE_MULTI_AXIS           0x08
 
 #define FORCE_FEEDBACK_MAXGAIN              1.0
-#define DEG_TO_RAD              ((float)((float)3.14159265359 / 180.0))
+//#define DEG_TO_RAD              ((float)((float)3.14159265359 / 180.0)) // double definition
 
 struct Gains{
     float totalGain         = FORCE_FEEDBACK_MAXGAIN;

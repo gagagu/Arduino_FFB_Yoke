@@ -53,26 +53,14 @@ void updateEffects(bool recalculate){
         effects[MEM_PITCH].damperVelocity = velY;
 
         #ifdef DEBUG
-        //write_order(LOG);
-        
-        Serial.print("\ttime:");
-        Serial.print(currentMillis);
-        Serial.print("\tX:");
-        Serial.print(pos[MEM_ROLL]);
-        Serial.print("\tY:");
-        Serial.print(pos[MEM_PITCH]);
-        Serial.print("\tCx:");
-        Serial.print(positionChangeX);
-        Serial.print("\tCy");
-        Serial.print(positionChangeY);
-        Serial.print("\tVx:");
-        Serial.print(velX);
-        Serial.print("\tVy:");
-        Serial.print(velY);
-        Serial.print("\tAx:");
-        Serial.print(accelX);
-        Serial.print("\tAy:");
-        Serial.print(accelY);
+          log(1,pos[MEM_ROLL]);
+          log(2,pos[MEM_PITCH]);
+          log(3,positionChangeX);
+          log(4,positionChangeY);
+          log(5,velX);
+          log(6,velY);
+          log(7,accelX);
+          log(8,accelY);
         #endif
 
         lastX = pos[MEM_ROLL];
@@ -95,10 +83,8 @@ void updateEffects(bool recalculate){
 
     #ifdef DEBUG
     if (diffTime > 0 && recalculate) {
-        Serial.print("\tF0:");
-        Serial.print(forces[MEM_ROLL]);
-        Serial.print("\tF1:");
-        Serial.print(forces[MEM_PITCH]);
+          log(9,forces[MEM_ROLL]);
+          log(10,forces[MEM_PITCH]);
     }
     #endif
 }
