@@ -77,14 +77,16 @@ byte poti_pitch_deadzone = 10;                        //Potentiometer deadzone f
 
 // input values array from Multiplexer Calib Button,
 // Force Potis, End Switches
-int adjustments_input[16];
+int adjustments_input[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 // flags for calibration mode
+bool calibration_button_pressed = false;
 bool calibration_mode = false;
 bool calibration_mode_roll_min = false;
 bool calibration_mode_roll_max = false;
 bool calibration_mode_pitch_min = false;
 bool calibration_mode_pitch_max = false;
+bool calibration_mode_middle = false;
 
 // flag to show if motors are diables
 bool are_motors_disabled = true;
@@ -153,9 +155,6 @@ void ArduinoSetup()
 
   // Timer4: pin 13 & 6
   TCCR4B = _BV(CS40); // change the PWM frequencey to 31.25kHz - pin 13 & 6
-
-  // Enable Power LED
-  SetLED(LED_BIT_POWER);
 }
 
 /****************************************
@@ -216,7 +215,7 @@ void UpdateJoystickPos()
         pos[MEM_PITCH] = map(pot_pitch, poti_pitch_middle + poti_pitch_deadzone, poti_pitch_max, 0, JOYSTICK_maxY); // convert values to 0 till 32767 Joystick value
       else
         pos[MEM_PITCH] = map(pot_pitch, poti_pitch_min, poti_pitch_middle - poti_pitch_deadzone, JOYSTICK_minY, 0); // convert values to -32768 till 0 Joystick value
-              
+
     }
   }
 
@@ -327,35 +326,32 @@ void DriveMotors() {
 #endif
 } //DriveMotors
 
-
-/*************************************
-  Check if calibration mode is started
-*************************************/
+/*
+   Check if calibration mode is started
+*/
 bool CheckCalibrationMode() {
   if (calibration_mode) {
     return calibration_mode;
   } else {
-    if (adjustments_input[ADJ_BUTTON_CALIBRATION] > 0) {
-      delay(1000);
-      if (adjustments_input[ADJ_BUTTON_CALIBRATION] > 0) {
-        SetLED(LED_BIT_CALIBRATION);    // Enable Calibration LED
-        SetLED(LED_BIT_ROLL_MIN);    // Enable Roll Min LED
-        SetLED(LED_BIT_ROLL_MAX);    // Enable Roll Max LED
-        SetLED(LED_BIT_PITCH_MIN);    // Enable Pitch Min LED
-        SetLED(LED_BIT_PITCH_MAX);    // Enable Pitch Max LED
-        calibration_mode = true;
-        calibration_mode_roll_min = true;
-        calibration_mode_roll_max = true;
-        calibration_mode_pitch_min = true;
-        calibration_mode_pitch_max = true;
-#ifdef DEBUG
-        // Serial.println("Start calibration:");
-#endif
-      } // if button
-      return calibration_mode;
-    } else {
+    // debounce button
+    if (adjustments_input[ADJ_BUTTON_CALIBRATION] > 0 && calibration_button_pressed == false) {
+      calibration_button_pressed = true;
       return false;
     }
+
+    if (adjustments_input[ADJ_BUTTON_CALIBRATION] == 0 && calibration_button_pressed == true) {
+      waitMillis = 0;
+      calibration_mode = true;
+      calibration_mode_roll_min = true;
+      calibration_mode_roll_max = true;
+      calibration_mode_pitch_min = true;
+      calibration_mode_pitch_max = true;
+      calibration_mode_middle = true;
+      LcdCalibrationStart();
+      calibration_button_pressed = false;
+    } // if button
+
+    return calibration_mode;
   }
 } // CheckCalibrationMode
 
@@ -372,71 +368,66 @@ void UpdateCalibration()
     if (adjustments_input[ADJ_ENDSWITCH_PITCH_DOWN] > 0 && calibration_mode_pitch_min) {
       poti_pitch_min = analogRead(POTI_PITCH);
       calibration_mode_pitch_min = false;
-      ClearLED(LED_BIT_PITCH_MIN);
-#ifdef DEBUG
-      //Serial.print("Pitch Down:");
-      //Serial.println(poti_pitch_min);
-#endif
+      LcdCalibrationUpdate();
     }
 
     if (adjustments_input[ADJ_ENDSWITCH_PITCH_UP] > 0 && calibration_mode_pitch_max) {
       poti_pitch_max = analogRead(POTI_PITCH);
       calibration_mode_pitch_max = false;
-      ClearLED(LED_BIT_PITCH_MAX);
-#ifdef DEBUG
-      //Serial.print("Pitch Up:");
-      //Serial.println(poti_pitch_max);
-#endif
+      LcdCalibrationUpdate();
     }
 
     if (adjustments_input[ADJ_ENDSWITCH_ROLL_LEFT] > 0 && calibration_mode_roll_min) {
       poti_roll_min = analogRead(POTI_ROLL);
       calibration_mode_roll_min = false;
-      ClearLED(LED_BIT_ROLL_MIN);
-#ifdef DEBUG
-      // Serial.print("Roll Down:");
-      //Serial.println(poti_roll_min);
-#endif
+      LcdCalibrationUpdate();
     }
 
     if (adjustments_input[ADJ_ENDSWITCH_ROLL_RIGHT] > 0 && calibration_mode_roll_max) {
       poti_roll_max = analogRead(POTI_ROLL);
       calibration_mode_roll_max = false;
-      ClearLED(LED_BIT_ROLL_MAX);
-#ifdef DEBUG
-      // Serial.print("Roll Up:");
-      // Serial.println(poti_roll_max);
-#endif
+      LcdCalibrationUpdate();
     }
-
   } else {
-    if (adjustments_input[ADJ_BUTTON_CALIBRATION] > 0) {
-      delay(200);
-      if (adjustments_input[ADJ_BUTTON_CALIBRATION] > 0) {
-        poti_roll_middle = analogRead(POTI_ROLL);
-        poti_pitch_middle = analogRead(POTI_PITCH);
-
-        if (poti_pitch_min > poti_pitch_max)
-        {
-          int tmp_val = poti_pitch_max;
-          poti_pitch_max = poti_pitch_min;
-          poti_pitch_min = tmp_val;
-        }
-        if (poti_roll_min > poti_roll_max)
-        {
-          int tmp_val = poti_roll_max;
-          poti_roll_max = poti_roll_min;
-          poti_roll_min = tmp_val;
-        }
-#ifdef DEBUG
-        //Serial.println("Calibration End");
-        delay(1000);
-#endif
-        calibration_mode = false;
-        ClearLED(LED_BIT_CALIBRATION);  // clear Calibration LED
-      }
+    if (calibration_mode_middle)
+    {
+      waitMillis = millis() + 1000;
+      calibration_mode_middle = false;
     }
-  }
+    else {
+      if (millis() >= waitMillis && waitMillis != 0)
+      {
+        waitMillis = 0;
+        LcdCalibrationMiddle();
+      }
+      else {
+        if (adjustments_input[ADJ_BUTTON_CALIBRATION] > 0 && calibration_button_pressed == false) {
+          calibration_button_pressed = true;
+          return;
+        }
+        if (adjustments_input[ADJ_BUTTON_CALIBRATION] == 0 && calibration_button_pressed == true) {
+          poti_roll_middle = analogRead(POTI_ROLL);
+          poti_pitch_middle = analogRead(POTI_PITCH);
+
+          if (poti_pitch_min > poti_pitch_max)
+          {
+            int tmp_val = poti_pitch_max;
+            poti_pitch_max = poti_pitch_min;
+            poti_pitch_min = tmp_val;
+          }
+          if (poti_roll_min > poti_roll_max)
+          {
+            int tmp_val = poti_roll_max;
+            poti_roll_max = poti_roll_min;
+            poti_roll_min = tmp_val;
+          }
+          calibration_mode = false;
+          calibration_button_pressed = false;
+          lcd.clear();
+        }
+      } // else
+    } //else
+  } // else
 } //UpdateCalibration
 
 /*************************************
@@ -484,39 +475,6 @@ int AnalogReadMux(bool s0, bool s1, bool s2, bool s3, byte pinEnable, byte pinRe
   return val;
 } //AnalogReadMux
 
-/**************************************
-   turn one LED on given by bit number
-***************************************/
-void SetLED(byte number) {
-  bitSet(shift_register_data, number);
-}
-
-/****************************************
-   switch one LED off given by bit number
-****************************************/
-void ClearLED(byte number) {
-  bitClear(shift_register_data, number);
-}
-
-/*******************************
-   switch all LEDs off
-*******************************/
-void ClearAllLEDs() {
-  shift_register_data = 0;
-}
-
-/*******************************************
-  Sets the Shift Register with the values
-  saved in shift_register_data
-  for LED display
-******************************************/
-void SetShiftRegister() {
-  digitalWrite(SHIFT_LATCH_PIN, LOW);
-  // shift out the bits:
-  shiftOut(SHIFT_DATA_PIN, SHIFT_CLOCK_PIN, MSBFIRST, shift_register_data);
-  //take the latch pin high so the LEDs will light up:
-  digitalWrite(SHIFT_LATCH_PIN, HIGH);
-}//SetShiftRegister
 
 /************************************************
    Reads the adjustemts values from Multiplexer
@@ -538,6 +496,8 @@ void UpdateAdjustmentsValues() {
   adjustments_input[ADJ_POTI_ROLL_FORCE_MAX] = map(AnalogReadMux(bitRead(ADJ_POTI_ROLL_FORCE_MAX, 0), bitRead(ADJ_POTI_ROLL_FORCE_MAX, 1), bitRead(ADJ_POTI_ROLL_FORCE_MAX, 2), bitRead(ADJ_POTI_ROLL_FORCE_MAX, 3), MUX_EN_INPUT, MUX_SIGNAL_INPUT), 0, 1023, 0, 32767);
   adjustments_input[ADJ_POTI_ROLL_PWM_MAX] = map(AnalogReadMux(bitRead(ADJ_POTI_ROLL_PWM_MAX, 0), bitRead(ADJ_POTI_ROLL_PWM_MAX, 1), bitRead(ADJ_POTI_ROLL_PWM_MAX, 2), bitRead(ADJ_POTI_ROLL_PWM_MAX, 3), MUX_EN_INPUT, MUX_SIGNAL_INPUT), 0, 1023, 0, 255);
   adjustments_input[ADJ_POTI_ROLL_PWM_MIN] = map(AnalogReadMux(bitRead(ADJ_POTI_ROLL_PWM_MIN, 0), bitRead(ADJ_POTI_ROLL_PWM_MIN, 1), bitRead(ADJ_POTI_ROLL_PWM_MIN, 2), bitRead(ADJ_POTI_ROLL_PWM_MIN, 3), MUX_EN_INPUT, MUX_SIGNAL_INPUT), 0, 1023, 0, 255);
+
+
   // debug
 #ifdef DEBUG
   log(21, adjustments_input[ADJ_ENDSWITCH_PITCH_DOWN]);
@@ -611,6 +571,126 @@ void UpdateJoystickButtons() {
   }
 } //updateJoystickButtons
 
+
+/*
+   Shows the adjustemt values to the lcd display
+*/
+void LcdAdjustmendValues(byte counter) {
+  if (counter == 0)
+  {
+    lcd.setCursor(0, 0);
+    LcdPrintFromStringTable(4); //Roll  Force:
+    lcd.print(adjustments_input[ADJ_POTI_ROLL_FORCE_MAX]);
+    return;
+  }
+
+  if (counter == 1)
+  {
+    lcd.setCursor(0, 1);
+    LcdPrintFromStringTable(5); //PWM Mi-Ma:
+    lcd.print(adjustments_input[ADJ_POTI_ROLL_PWM_MIN]);
+    LcdPrintFromStringTable(8); //-
+    lcd.print(adjustments_input[ADJ_POTI_ROLL_PWM_MAX]);
+    return;
+  }
+  if (counter == 2)
+  {
+    lcd.setCursor(0, 2);
+    LcdPrintFromStringTable(6); //Pitch Force:
+    lcd.print(adjustments_input[ADJ_POTI_PITCH_FORCE_MAX]);
+    return;
+  }
+  if (counter == 3)
+  {
+    lcd.setCursor(0, 3);
+    LcdPrintFromStringTable(7); //PWM Mi-Ma:
+    lcd.print(adjustments_input[ADJ_POTI_PITCH_PWM_MIN]);
+    LcdPrintFromStringTable(8); //-
+    lcd.print(adjustments_input[ADJ_POTI_PITCH_PWM_MAX]);
+    return;
+  }
+} //LcdAdjustmendValues
+
+/*
+   Shows the calibration to LCD
+*/
+void LcdCalibrationMiddle() {
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  LcdPrintFromStringTable(16); //Put all axes in the
+  lcd.setCursor(0, 1);
+  LcdPrintFromStringTable(17); //middle position and
+  lcd.setCursor(0, 2);
+  LcdPrintFromStringTable(18); //press the button
+  lcd.setCursor(0, 3);
+  LcdPrintFromStringTable(19); //again
+} //LcdCalibrationMiddle
+
+/*
+    Shows the calibration to LCD
+*/
+void LcdCalibrationUpdate() {
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  LcdPrintFromStringTable(12); //Left  end
+  if (!calibration_mode_roll_min) {
+    lcd.print(poti_roll_min);
+  }
+  lcd.setCursor(0, 1);
+  LcdPrintFromStringTable(13); //right end
+  if (!calibration_mode_roll_max) {
+    lcd.print(poti_roll_max);
+  }
+  lcd.setCursor(0, 2);
+  LcdPrintFromStringTable(14); // up end
+  if (!calibration_mode_pitch_max) {
+    lcd.print(poti_pitch_max);
+  }
+  lcd.setCursor(0, 3);
+  LcdPrintFromStringTable(15); // down end
+  if (!calibration_mode_pitch_min) {
+    lcd.print(poti_pitch_min);
+  }
+} //LcdCalibrationUpdate
+
+void LcdPrintSpaces(byte index, byte count) {
+  strcpy_P(stringbuffer, (char*)pgm_read_word(&(string_table[20]))); // Casts und Dereferenzierung des Speichers
+  for (byte x = index; x < count; x++)
+  {
+    lcd.print(stringbuffer);
+  }
+}
+
+void LcdCalibrationStart()
+{
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  LcdPrintFromStringTable(9); //Calibration started.
+  lcd.setCursor(0, 1);
+  LcdPrintFromStringTable(10); //Please move all axes
+  lcd.setCursor(0, 2);
+  LcdPrintFromStringTable(11); //to the end positions
+}
+
+void LcdPrintIntro() {
+  lcd.setCursor(0, 0);
+  LcdPrintFromStringTable(0);
+  lcd.setCursor(0, 1);
+  LcdPrintFromStringTable(1);
+  lcd.setCursor(0, 2);
+  LcdPrintFromStringTable(2);
+  lcd.setCursor(0, 3);
+  LcdPrintFromStringTable(3);
+}
+
+/*
+   Reads the string to print from prog mem
+*/
+void LcdPrintFromStringTable(byte stringPos) {
+  strcpy_P(stringbuffer, (char*)pgm_read_word(&(string_table[stringPos]))); // Casts und Dereferenzierung des Speichers
+  lcd.print(stringbuffer);
+} //LcdPrintFromStringTable
+
 void log(byte key, int16_t value) {
   Serial.print(key);
   Serial.print(":");
@@ -630,5 +710,4 @@ void log(byte key, int32_t value) {
   Serial.print(":");
   Serial.print(value);
   Serial.print(" ");
-  //  Serial.println("hallo");
 }
