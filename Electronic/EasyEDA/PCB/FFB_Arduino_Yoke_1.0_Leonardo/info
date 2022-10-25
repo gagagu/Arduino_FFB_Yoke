@@ -1,0 +1,343 @@
+{
+  "uuid": "6ee95feae3b8d81a3016f8922a0a425b",
+  "path": "Offline/FFB_Arduino_Yoke_1.0_Leonardo",
+  "name": "FFB_Arduino_Yoke_1.0_Leonardo",
+  "content": "",
+  "created_at": "2022-10-19 14:39:35",
+  "updated_at": "2022-10-24 09:13:04",
+  "stick": "",
+  "documents": [
+    {
+      "uuid": "e6a6864816b54b50ee3e76760bf9a535",
+      "title": "Sheet_Arduino_Yoke_1.0_Leonardo",
+      "description": "",
+      "docType": "1",
+      "master": "",
+      "thumb": "/images/thumb-default.png",
+      "components": {
+        "65cf702022cd4349a43aef76dd04b916": 1,
+        "d70a8591f8a647ccbaab76e66ce9c5cf": 1,
+        "c3b9791b6deb4295918ced34cfa04b21": 1,
+        "165c79e338fd4695b6e566269e9997d8": 8,
+        "5d56951fd43d4b5083b0f3cd9bfd5587": 5,
+        "d6f3a4b0bba0432aa3507977687f7de3": 2,
+        "6b6ad5031ecd4298ae392a433e2722fb": 1,
+        "97e3dfd84929426786ec7929e48dfb0d": 1,
+        "fcaba4851eda4ca19d4326a668633a30": 2,
+        "a052559478a14ee2b9e3514bee4ff72d": 3,
+        "3ec77201bbcd4ecd8722658d581a4e60": 5
+      },
+      "BOM": [
+        [
+          "Value",
+          "Quantity",
+          "Package",
+          "Components",
+          "CustomPara"
+        ],
+        [
+          "10k",
+          5,
+          "R_AXIAL-0.4",
+          "10K-1,10K-2,10K-3,10K-4,10K-5",
+          {
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "BOM_Manufacturer Part": "",
+            "puuid": "5905db98cde4487fbb177070aa85bbe1",
+            "uuid": "5d56951fd43d4b5083b0f3cd9bfd5587"
+          }
+        ],
+        [
+          "CD74HC595E",
+          1,
+          "PDIP-16_L19.3-W6.4-P2.54-LS7.9-BL",
+          "74HC595",
+          {
+            "BOM_Supplier": "LCSC",
+            "BOM_Supplier Part": "C2871902",
+            "BOM_Manufacturer": "TI(德州仪器)",
+            "BOM_Manufacturer Part": "CD74HC595E",
+            "puuid": "5274406e19354d008c5fde605f0c6ecf",
+            "uuid": "6b6ad5031ecd4298ae392a433e2722fb"
+          }
+        ],
+        [
+          "MUX CD74HC4067",
+          1,
+          "16-KANAL ANALOG/DIGITAL MULTIPLEXER MUX CD74HC4067",
+          "74HC4067",
+          {
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "BOM_Supplier": "Bastelgarage",
+            "BOM_Supplier Part": "420243",
+            "puuid": "e5c25ebcf72f480997814bfb4e1a10e3",
+            "uuid": "d70a8591f8a647ccbaab76e66ce9c5cf"
+          }
+        ],
+        [
+          "ARDUINO_LEONARDO",
+          1,
+          "ARDUINO_LEONARDO",
+          "ARDUINO-LEONARDO",
+          {
+            "BOM_Manufacturer Part": "",
+            "puuid": "8520452d45ad4393a4fb3bb5ee47c69a",
+            "uuid": "65cf702022cd4349a43aef76dd04b916"
+          }
+        ],
+        [
+          "R_3386P_EU",
+          2,
+          "RES-ADJ-TH_3386P",
+          "BACKLIGHT,CONTRAST",
+          {
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "LCSC",
+            "BOM_Manufacturer Part": "",
+            "puuid": "ce6e0cc9b0684cd986edbf86d7075dfd",
+            "uuid": "fcaba4851eda4ca19d4326a668633a30"
+          }
+        ],
+        [
+          "HDR-F-2.54_1x2",
+          5,
+          "HDR-F-2.54_1X2",
+          "CALIBR,P_DOWN,P_UP,R_LEFT,R_RIGHT",
+          {
+            "BOM_Supplier Part": "C49661",
+            "BOM_Supplier": "LCSC",
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "puuid": "36b1306a115341f4b4d9407fb34974e0",
+            "uuid": "3ec77201bbcd4ecd8722658d581a4e60"
+          }
+        ],
+        [
+          "HDR-M-2.54_1x16",
+          1,
+          "HDR-M-2.54_1X16",
+          "DISPLAY",
+          {
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "LCSC",
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "puuid": "b811781e2b834ff7927ba9960dacf589",
+            "uuid": "97e3dfd84929426786ec7929e48dfb0d"
+          }
+        ],
+        [
+          "HDR-M-2.54_1x5",
+          2,
+          "HDR-M-2.54_1X5",
+          "GND,VCC",
+          {
+            "BOM_Supplier Part": "C358687",
+            "BOM_Supplier": "LCSC",
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "puuid": "108969f8d9834a9ea23bcec2d43a66e4",
+            "uuid": "a052559478a14ee2b9e3514bee4ff72d"
+          }
+        ],
+        [
+          "HDR-F-2.54_2x4",
+          2,
+          "HDR-F-2.54_2X4",
+          "PITCH_MOTOR,ROLL_MOTOR",
+          {
+            "BOM_Supplier Part": "C239344",
+            "BOM_Supplier": "LCSC",
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "puuid": "31ed58ef9e15436886218390490a87d8",
+            "uuid": "d6f3a4b0bba0432aa3507977687f7de3"
+          }
+        ],
+        [
+          "Pitch Poti",
+          1,
+          "DUPONT_3PTS",
+          "POTI-PITCH",
+          {
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "puuid": "68e7b315f0af414697963e1a27371e2f",
+            "uuid": "165c79e338fd4695b6e566269e9997d8"
+          }
+        ],
+        [
+          "Roll Poti",
+          1,
+          "DUPONT_3PTS",
+          "POTI-ROLL",
+          {
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "puuid": "68e7b315f0af414697963e1a27371e2f",
+            "uuid": "165c79e338fd4695b6e566269e9997d8"
+          }
+        ],
+        [
+          "Pitch Force Max",
+          1,
+          "DUPONT_3PTS",
+          "P_FORCE",
+          {
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "puuid": "68e7b315f0af414697963e1a27371e2f",
+            "uuid": "165c79e338fd4695b6e566269e9997d8"
+          }
+        ],
+        [
+          "Pitch PWM Max",
+          1,
+          "DUPONT_3PTS",
+          "P_MAX",
+          {
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "puuid": "68e7b315f0af414697963e1a27371e2f",
+            "uuid": "165c79e338fd4695b6e566269e9997d8"
+          }
+        ],
+        [
+          "Pitch PWM Min",
+          1,
+          "DUPONT_3PTS",
+          "P_MIN",
+          {
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "puuid": "68e7b315f0af414697963e1a27371e2f",
+            "uuid": "165c79e338fd4695b6e566269e9997d8"
+          }
+        ],
+        [
+          "Reserved",
+          1,
+          "HDR-M-2.54_1X5",
+          "RESERVED",
+          {
+            "BOM_Supplier Part": "C358687",
+            "BOM_Supplier": "LCSC",
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "puuid": "108969f8d9834a9ea23bcec2d43a66e4",
+            "uuid": "a052559478a14ee2b9e3514bee4ff72d"
+          }
+        ],
+        [
+          "Roll Force Max",
+          1,
+          "DUPONT_3PTS",
+          "R_FORCE",
+          {
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "puuid": "68e7b315f0af414697963e1a27371e2f",
+            "uuid": "165c79e338fd4695b6e566269e9997d8"
+          }
+        ],
+        [
+          "Roll PWM Max",
+          1,
+          "DUPONT_3PTS",
+          "R_MAX",
+          {
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "puuid": "68e7b315f0af414697963e1a27371e2f",
+            "uuid": "165c79e338fd4695b6e566269e9997d8"
+          }
+        ],
+        [
+          "Roll PWM Min",
+          1,
+          "DUPONT_3PTS",
+          "R_MIN",
+          {
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "puuid": "68e7b315f0af414697963e1a27371e2f",
+            "uuid": "165c79e338fd4695b6e566269e9997d8"
+          }
+        ],
+        [
+          "Yoke Connector",
+          1,
+          "DUPONT_1X8",
+          "YOKE_CONNECTOR",
+          {
+            "BOM_Manufacturer Part": "Conector_dupont",
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "puuid": "383cfea934e04a9f8cafeda7e5a87fb2",
+            "uuid": "c3b9791b6deb4295918ced34cfa04b21"
+          }
+        ]
+      ],
+      "updateTime": 1666592985,
+      "createTime": 1666184202,
+      "histories": [],
+      "created_at": "2022-10-19 14:56:42",
+      "updated_at": "2022-10-24 08:29:45"
+    },
+    {
+      "uuid": "a7cf53254311a3094567bfc9a55d875c",
+      "puuid": "6ee95feae3b8d81a3016f8922a0a425b",
+      "title": "Board_Arduino_Yoke_1.0_Leonardo",
+      "filename": "Board_Arduino_Yoke_1.0_Leonardo.json",
+      "description": "",
+      "docType": "3",
+      "master": "",
+      "thumb": "/images/thumb-default.png",
+      "components": {
+        "108969f8d9834a9ea23bcec2d43a66e4": 3,
+        "68e7b315f0af414697963e1a27371e2f": 8,
+        "36b1306a115341f4b4d9407fb34974e0": 5,
+        "5274406e19354d008c5fde605f0c6ecf": 1,
+        "b811781e2b834ff7927ba9960dacf589": 1,
+        "31ed58ef9e15436886218390490a87d8": 2,
+        "e5c25ebcf72f480997814bfb4e1a10e3": 1,
+        "ce6e0cc9b0684cd986edbf86d7075dfd": 2,
+        "5905db98cde4487fbb177070aa85bbe1": 5,
+        "8520452d45ad4393a4fb3bb5ee47c69a": 1,
+        "383cfea934e04a9f8cafeda7e5a87fb2": 1
+      },
+      "BOM": [],
+      "updateTime": 1666595584,
+      "createTime": 1666188213,
+      "histories": [],
+      "created_at": "2022-10-19 16:03:33",
+      "updated_at": "2022-10-24 09:13:04"
+    }
+  ],
+  "sort": [
+    "e6a6864816b54b50ee3e76760bf9a535",
+    "764f57302a83a24cb0c797645d1d7900"
+  ],
+  "title": "FFB_Arduino_Yoke_1.0_Leonardo",
+  "foldername": "FFB_Arduino_Yoke_1.0_Leonardo",
+  "schfilename": "FFB_Arduino_Yoke_1.0_Leonardo.json",
+  "schfilemtime": 1666593921933
+}
