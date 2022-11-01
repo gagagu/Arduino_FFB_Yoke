@@ -10,6 +10,8 @@ void setupJoystick() {
     Joystick.setGains(gains);
 }
 
+
+
 void updateEffects(bool recalculate){
     for (int i =0; i < MEM_AXES; i++) {
         effects[i].frictionMaxPositionChange = frictionMaxPositionChangeCfg;

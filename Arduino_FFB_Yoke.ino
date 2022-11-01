@@ -77,7 +77,7 @@ unsigned long waitMillis = 0;         // count millis for wait loops
 unsigned long lcdMillis;        // millis for the lcd display
 unsigned long currentMillis;        // millis for the current loop
 
-byte myLcdCounter=0;
+byte myLcdCounter = 0;
 bool pos_updated = false;           // indicate position updates
 int16_t pos[MEM_AXES] = {0, 0};     // sored joystick positions (not Potentiometers values, mapped values)
 int lastX;                          // X value from last loop
@@ -89,6 +89,8 @@ int lastAccelY;                     // Acceleration X value from last loop
 
 EffectParams effects[2];            // stored effect parameters
 int32_t forces[MEM_AXES] = {0, 0};  // stored forces
+
+
 
 Joystick_ Joystick(                 // define Joystick parameters
   JOYSTICK_DEFAULT_REPORT_ID,       // ID defined in Joystick.h
@@ -112,7 +114,6 @@ void setup() {
 #if defined(DEBUG)
   Serial.begin(SERIAL_BAUD);
 #endif
-
   lastEffectsUpdate = 0;            // reset counters
   nextJoystickMillis = 0;           // reset counters
   nextEffectsMillis = 0;            // reset counters
@@ -128,44 +129,40 @@ void setup() {
 ****************************/
 void loop() {
   currentMillis = millis();                                             // number of milliseconds passed since the Arduino board began running the current program
-  UpdateAdjustmentsValues();                                          // read adjustments like force,pwm potentiometers and calibration button
-  UpdateJoystickButtons();                                            // read Joystick Buttons and sent it to system
-    
+
   if (currentMillis >= nextJoystickMillis) {                            // do not run more frequently than these many milliseconds, the window system needs time to process
-    if (CheckCalibrationMode()) {                                       // ist calibration mode started?
-      DisableMotors();                                                  // disable motors if enable
-      UpdateCalibration();                                              // calibrate
+    ReadMux();
+
+    CheckCalibrationMode();
+    UpdateJoystickPos();                                              // read Joystick Potentiometers and send it to system
+    UpdateJoystickButtons();                                          // read Joystick Buttons and sent it to system
+
+    if (currentMillis >= nextEffectsMillis || pos_updated) {          // we calculate condition forces every 100ms or more frequently if we get position updates
+      updateEffects(true);                                            // update/calculate new effect paraeters
+      nextEffectsMillis = currentMillis + 100;                        // set time for new effect loop
+      pos_updated = false;
     } else {
-        UpdateJoystickPos();                                              // read Joystick Potentiometers and send it to system
+      updateEffects(false);                                           // calculate forces without recalculating condition forces
+      // this helps having smoother spring/damper/friction
+      // if our update rate matches our input device
+    } //nextEffectsMillis  || pos_updated
 
-        if (currentMillis >= nextEffectsMillis || pos_updated) {          // we calculate condition forces every 100ms or more frequently if we get position updates
-          updateEffects(true);                                            // update/calculate new effect paraeters
-          nextEffectsMillis = currentMillis + 100;                        // set time for new effect loop
-          pos_updated = false;
-         // LcdAdjustmendValues();
-        } else {
-          updateEffects(false);                                           // calculate forces without recalculating condition forces
-          // this helps having smoother spring/damper/friction
-          // if our update rate matches our input device
-        } //nextEffectsMillis  || pos_updated
+    DriveMotors();                                                    // move motors
+    nextJoystickMillis = currentMillis + 2;                           // set time for new joystick loop
 
-        EnableMotors();                                                   // Enable Motor if disabled
-        DriveMotors();                                                    // move motors
-        nextJoystickMillis = currentMillis + 2;                           // set time for new joystick loop
-
-        // Updating LCD is too long and will caused in heavy movements
-        // so the display will updated line by line to reduce time
-        if(currentMillis >lcdMillis){
-          LcdAdjustmendValues(myLcdCounter);
-          myLcdCounter++;
-          if(myLcdCounter==4){
-            myLcdCounter=0;
-          }
-          lcdMillis=currentMillis + 250;
-        }
+    // Updating LCD is too long and will caused in heavy movements
+    // so the display will updated line by line to reduce time
+    if (currentMillis > lcdMillis) {
+      LcdAdjustmendValues(myLcdCounter);
+      myLcdCounter++;
+      if (myLcdCounter == 4) {
+        myLcdCounter = 0;
+      }
+      lcdMillis = currentMillis + 250;
     }
-    #ifdef DEBUG
-      Serial.println("");
-    #endif    
+
+#ifdef DEBUG
+    Serial.println("");
+#endif
   } //nextJoystickMillis
 } // loop
