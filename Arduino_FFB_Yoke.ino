@@ -1,7 +1,7 @@
 
 #include "src/Joystick.h"
 #include "config.h"
-#include <LiquidCrystal_74HC595.h>
+#include <LiquidCrystal.h>
 #include <avr/pgmspace.h>
 
 /**** BEGIN DEBUG INFO **********************
@@ -11,7 +11,7 @@
 *************************/
 
 
-#define NODEBUG       // gerneral debug info for Joystick, Please use the Arduino_FFB_Yoke_App for read out
+#define DEBUG       // gerneral debug info for Joystick, Please use the Arduino_FFB_Yoke_App for read out
 // change to DEBUG to enable debugging
 // change to NODEBUG to disable debugging
 
@@ -100,7 +100,7 @@ Joystick_ Joystick(                 // define Joystick parameters
   false, false, false,              // Rx, Ry, Rz
   false, false);                    // rudder, throttle
 
-LiquidCrystal_74HC595 lcd(A3, 12, 0, 1, 2, 3, 4, 5, 6);
+LiquidCrystal lcd(0, 12,4,5,3,7);
 
 /********************************
      initial setup
