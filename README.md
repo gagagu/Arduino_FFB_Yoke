@@ -36,7 +36,9 @@ micro.build.usb_product="Arduino Micro"
 
 #### and change it to (use at your own risk), you can comment out the old value by using a Rhombus symbol
 micro.build.vid=0x9998
+
 micro.build.pid=0x9998
+
 micro.build.usb_product="Arduino FFB Yoke"
 
 ## Calibration
