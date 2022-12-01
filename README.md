@@ -33,9 +33,6 @@ micro.build.pid=0x8037
 micro.build.usb_product="Arduino Micro"
 
 #### and change it to (use at your own risk)
-#micro.build.vid=0x2341
-#micro.build.pid=0x8037
-#micro.build.usb_product="Arduino Micro"
 micro.build.vid=0x9998
 micro.build.pid=0x9998
 micro.build.usb_product="Arduino FFB Yoke"
