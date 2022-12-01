@@ -28,15 +28,17 @@ Also you can define the USB Name of the Joystick by changing the boards.txt file
 #### C:\Users\your username\AppData\Local\Arduino15\packages\arduino\hardware\avr\1.8.5\boards.txt
 
 #### find:
-leonardo.build.vid=0x2341
-leonardo.build.pid=0x8036
-leonardo.build.usb_product="Arduino Leonardo"
+micro.build.vid=0x2341
+micro.build.pid=0x8037
+micro.build.usb_product="Arduino Micro"
 
 #### and change it to (use at your own risk)
-
-leonardo.build.vid=0x9998
-leonardo.build.pid=0x9998
-leonardo.build.usb_product="Arduino FFB Yoke"
+#micro.build.vid=0x2341
+#micro.build.pid=0x8037
+#micro.build.usb_product="Arduino Micro"
+micro.build.vid=0x9998
+micro.build.pid=0x9998
+micro.build.usb_product="Arduino FFB Yoke"
 
 ## Calibration
 The newest Version of the code uses a calibration routine for measure the Potentiometer Values on all directions. I will be started on power on and by pressing the button (see Schematic image). The LED will blinking to indicate this mode. You have to move the Yoke to all direction till the end switches will trigger. After all axes will done the calibration is finished and the LED blinking will end.
