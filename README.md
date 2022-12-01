@@ -29,7 +29,9 @@ Also you can define the USB Name of the Joystick by changing the boards.txt file
 
 #### find:
 micro.build.vid=0x2341
+
 micro.build.pid=0x8037
+
 micro.build.usb_product="Arduino Micro"
 
 #### and change it to (use at your own risk), you can comment out the old value by using a Rhombus symbol
