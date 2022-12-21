@@ -42,14 +42,6 @@
 #define ADJ_POTI_ROLL_PWM_MAX 4
 #define ADJ_POTI_ROLL_PWM_MIN 5
 
-// Shift Register for LEDs
-#define SHIFT_DATA_PIN A3
-#define SHIFT_CLOCK_PIN 12
-#define SHIFT_LATCH_PIN 0
-
-// data output value for shift register (LEDs)
-byte shift_register_data = 0;
-
 // variables for Speed calculation
 int roll_speed = 0;
 int pitch_speed = 0;
@@ -112,11 +104,6 @@ void ArduinoSetup()
   pinMode(MUX_EN_INPUT, OUTPUT);
   pinMode(MUX_SIGNAL_INPUT, INPUT);
 
-  // Shift Register for LEDs
-  pinMode(SHIFT_DATA_PIN, OUTPUT);
-  pinMode(SHIFT_CLOCK_PIN, OUTPUT);
-  pinMode(SHIFT_LATCH_PIN, OUTPUT);
-
   // define pin default states
   // Pitch
   digitalWrite(PITCH_EN, LOW);
@@ -133,11 +120,6 @@ void ArduinoSetup()
   digitalWrite(MUX_S3, LOW);
   digitalWrite(MUX_EN_YOKE, HIGH);
   digitalWrite(MUX_EN_INPUT, HIGH);
-
-  // Shift Register for LEDs
-  digitalWrite(SHIFT_DATA_PIN, LOW);
-  digitalWrite(SHIFT_CLOCK_PIN, LOW);
-  digitalWrite(SHIFT_LATCH_PIN, LOW);
 
   // not for all Arduinos!
   // This sets the PWM Speed to maximun for noise reduction
