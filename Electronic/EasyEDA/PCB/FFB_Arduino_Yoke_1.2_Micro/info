@@ -1,0 +1,199 @@
+{
+  "uuid": "b30cfc192ddd1198d2a4d64f0a229808",
+  "path": "Offline/FFB_Arduino_Yoke_1.2_Micro",
+  "name": "FFB_Arduino_Yoke_1.2_Micro",
+  "content": "",
+  "created_at": "2022-12-31 13:32:39",
+  "updated_at": "2023-01-17 14:20:38",
+  "stick": "",
+  "documents": [
+    {
+      "uuid": "928b2cb3a4c9c46128437a0a0be7594a",
+      "title": "Sheet_Arduino_Yoke_1.2_Micro",
+      "description": "",
+      "docType": "1",
+      "master": "",
+      "thumb": "/images/thumb-default.png",
+      "components": {
+        "d70a8591f8a647ccbaab76e66ce9c5cf": 1,
+        "c3b9791b6deb4295918ced34cfa04b21": 1,
+        "5d56951fd43d4b5083b0f3cd9bfd5587": 6,
+        "d6f3a4b0bba0432aa3507977687f7de3": 2,
+        "97e3dfd84929426786ec7929e48dfb0d": 1,
+        "fcaba4851eda4ca19d4326a668633a30": 1,
+        "65ab3ba171b84d82991a2be1615003a0": 1,
+        "3ec77201bbcd4ecd8722658d581a4e60": 6,
+        "a8ef3c64e46d43419315bb331caa5a25": 14
+      },
+      "BOM": [
+        [
+          "Value",
+          "Quantity",
+          "Package",
+          "Components",
+          "CustomPara"
+        ],
+        [
+          "10k",
+          6,
+          "R_AXIAL-0.4",
+          "10K-5,10K-6,10K-7,10K-8,10K-9,10K-10",
+          {
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "BOM_Manufacturer Part": "",
+            "puuid": "5905db98cde4487fbb177070aa85bbe1",
+            "uuid": "5d56951fd43d4b5083b0f3cd9bfd5587"
+          }
+        ],
+        [
+          "MUX CD74HC4067",
+          1,
+          "16-KANAL ANALOG/DIGITAL MULTIPLEXER MUX CD74HC4067",
+          "74HC4067",
+          {
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "BOM_Supplier": "Bastelgarage",
+            "BOM_Supplier Part": "420243",
+            "puuid": "e5c25ebcf72f480997814bfb4e1a10e3",
+            "uuid": "d70a8591f8a647ccbaab76e66ce9c5cf"
+          }
+        ],
+        [
+          "R_3386P_EU",
+          1,
+          "RES-ADJ-TH_3386P",
+          "CONTRAST",
+          {
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "LCSC",
+            "BOM_Manufacturer Part": "",
+            "puuid": "ce6e0cc9b0684cd986edbf86d7075dfd",
+            "uuid": "fcaba4851eda4ca19d4326a668633a30"
+          }
+        ],
+        [
+          "HDR-M-2.54_1x16",
+          1,
+          "HDR-M-2.54_1X16",
+          "DISPLAY",
+          {
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "LCSC",
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "puuid": "b811781e2b834ff7927ba9960dacf589",
+            "uuid": "97e3dfd84929426786ec7929e48dfb0d"
+          }
+        ],
+        [
+          "HDR-F-2.54_1x2",
+          6,
+          "HDR-F-2.54_1X2",
+          "MENU-BACK,MENU-DOWN,MENU-ENTER,MENU-LEFT,MENU-RIGHT,MENU-UP",
+          {
+            "BOM_Supplier Part": "C49661",
+            "BOM_Supplier": "LCSC",
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "puuid": "36b1306a115341f4b4d9407fb34974e0",
+            "uuid": "3ec77201bbcd4ecd8722658d581a4e60"
+          }
+        ],
+        [
+          "ARDUINOMICRO",
+          1,
+          "ARDUINOMICRO",
+          "MICRO",
+          {
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "BOM_Manufacturer Part": "",
+            "puuid": "34ab09d236d54df99b8d8330ca441a4b",
+            "uuid": "65ab3ba171b84d82991a2be1615003a0"
+          }
+        ],
+        [
+          "Multiturn POT 10K",
+          14,
+          "HDR-F-2.54_1X3",
+          "PITCH1,PITCH2,P_DOWN,P_FORCE,P_M;IN,P_MAX,P_UP,ROLL1,ROLL2,R_FORCE,R_LEFT,R_MAX,R_MIN,R_RIGHT",
+          {
+            "BOM_Supplier Part": "C146690",
+            "BOM_Supplier": "LCSC",
+            "BOM_Manufacturer Part": "",
+            "puuid": "7d3b5ccfa9634aa8aa0d8785d5206a5c",
+            "uuid": "a8ef3c64e46d43419315bb331caa5a25"
+          }
+        ],
+        [
+          "HDR-F-2.54_2x4",
+          2,
+          "HDR-F-2.54_2X4",
+          "PITCH_MOTOR,ROLL_MOTOR",
+          {
+            "BOM_Supplier Part": "C239344",
+            "BOM_Supplier": "LCSC",
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "puuid": "31ed58ef9e15436886218390490a87d8",
+            "uuid": "d6f3a4b0bba0432aa3507977687f7de3"
+          }
+        ],
+        [
+          "Yoke Connector",
+          1,
+          "DUPONT_1X8",
+          "YOKE_CONNECTOR",
+          {
+            "BOM_Manufacturer Part": "Conector_dupont",
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "puuid": "383cfea934e04a9f8cafeda7e5a87fb2",
+            "uuid": "c3b9791b6deb4295918ced34cfa04b21"
+          }
+        ]
+      ],
+      "updateTime": 1673961561,
+      "createTime": 1666593347,
+      "histories": [],
+      "created_at": "2022-10-24 08:35:47",
+      "updated_at": "2023-01-17 14:19:21"
+    },
+    {
+      "uuid": "e9a50cc47f0c75aa47ed7ece56cc365e",
+      "title": "PCB_FFB_Arduino_Yoke_1.2_Micro",
+      "filename": "PCB_FFB_Arduino_Yoke_1.2_Micro.json",
+      "description": "",
+      "docType": "3",
+      "master": "",
+      "thumb": "/images/thumb-default.png",
+      "components": {
+        "7d3b5ccfa9634aa8aa0d8785d5206a5c": 14,
+        "36b1306a115341f4b4d9407fb34974e0": 6,
+        "5905db98cde4487fbb177070aa85bbe1": 6,
+        "e5c25ebcf72f480997814bfb4e1a10e3": 1,
+        "ce6e0cc9b0684cd986edbf86d7075dfd": 1,
+        "b811781e2b834ff7927ba9960dacf589": 1,
+        "34ab09d236d54df99b8d8330ca441a4b": 1,
+        "31ed58ef9e15436886218390490a87d8": 2,
+        "383cfea934e04a9f8cafeda7e5a87fb2": 1
+      },
+      "BOM": [],
+      "updateTime": 1673961638,
+      "createTime": 1666594569,
+      "histories": [],
+      "created_at": "2022-10-24 08:56:09",
+      "updated_at": "2023-01-17 14:20:38"
+    }
+  ],
+  "sort": [
+    "7273bdf533e42afe02162c40138cfd31",
+    "928b2cb3a4c9c46128437a0a0be7594a"
+  ],
+  "title": "FFB_Arduino_Yoke_1.2_Micro",
+  "foldername": "FFB_Arduino_Yoke_1.2_Micro",
+  "schfilename": "FFB_Arduino_Yoke_1.2_Micro.json",
+  "schfilemtime": 1673961561886
+}

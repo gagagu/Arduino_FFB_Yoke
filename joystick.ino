@@ -1,8 +1,15 @@
+unsigned long lastEffectsUpdate = 0;    // count millis for next effect calculation
+int16_t lastX;                          // X value from last loop
+int16_t lastY;                          // Y value from last loop
+int16_t lastVelX;                       // Velocity X value from last loop
+int16_t lastVelY;                       // Velocity y value from last loop
+int16_t lastAccelX;                     // Acceleration X value from last loop
+int16_t lastAccelY;                     // Acceleration X value from last loop
 
+EffectParams effects[2];            // stored effect parameters
 
 void setupJoystick() {
-    Joystick.setXAxisRange(JOYSTICK_minX, JOYSTICK_maxX);
-    Joystick.setYAxisRange(JOYSTICK_minY, JOYSTICK_maxY);
+    setRangeJoystick();
     Joystick.begin();
     Gains gains[FFB_AXIS_COUNT];
     gains[MEM_ROLL].frictionGain = friction_gain;
@@ -10,10 +17,20 @@ void setupJoystick() {
     Joystick.setGains(gains);
 }
 
+void setRangeJoystick() {
+   Joystick.setXAxisRange(JOYSTICK_minX, JOYSTICK_maxX);
+   Joystick.setYAxisRange(JOYSTICK_minY, JOYSTICK_maxY);
+}
 
 
 void updateEffects(bool recalculate){
-    for (int i =0; i < MEM_AXES; i++) {
+    int16_t pos[MEM_AXES] = {0, 0};
+
+    // Read Joystick poti values
+    pos[MEM_ROLL]=counterRoll.read();
+    pos[MEM_PITCH]=counterPitch.read();
+  
+    for (byte i =0; i < MEM_AXES; i++) {
         effects[i].frictionMaxPositionChange = frictionMaxPositionChangeCfg;
         effects[i].inertiaMaxAcceleration = inertiaMaxAccelerationCfg;
         effects[i].damperMaxVelocity = damperMaxVelocityCfg;
@@ -25,15 +42,15 @@ void updateEffects(bool recalculate){
     effects[MEM_PITCH].springMaxPosition = JOYSTICK_maxY;
     effects[MEM_ROLL].springPosition = pos[MEM_ROLL];
     effects[MEM_PITCH].springPosition = pos[MEM_PITCH];
-
+    
     unsigned long currentMillis;
     currentMillis = millis();
     int16_t diffTime = currentMillis - lastEffectsUpdate;
 
     if (diffTime > 0 && recalculate) {
         lastEffectsUpdate = currentMillis;
-        int16_t positionChangeX = pos[0] - lastX;
-        int16_t positionChangeY = pos[1] - lastY;
+        int16_t positionChangeX = pos[MEM_ROLL] - lastX;
+        int16_t positionChangeY = pos[MEM_PITCH] - lastY;
         int16_t velX = positionChangeX / diffTime;
         int16_t velY = positionChangeY / diffTime;
         int16_t accelX = ((velX - lastVelX) * 10) / diffTime;
@@ -43,8 +60,6 @@ void updateEffects(bool recalculate){
         //is the position difference of the force feedback axis.
         effects[MEM_ROLL].frictionPositionChange = velX;
         effects[MEM_PITCH].frictionPositionChange = velY;
-        //effects[MEM_ROLL].frictionPositionChange = positionChangeX;
-        //effects[MEM_PITCH].frictionPositionChange = positionChangeY;
 
         //If you need to use the damper effect, set the following parameters.`Velocity` is the current velocity of the force feedback axis.
         effects[MEM_ROLL].inertiaAcceleration = accelX;
@@ -79,7 +94,9 @@ void updateEffects(bool recalculate){
         effects[MEM_ROLL].damperVelocity = lastVelX;
         effects[MEM_PITCH].damperVelocity = lastVelY;
     }
-
+    
+    Joystick.setXAxis(pos[MEM_ROLL]);
+    Joystick.setYAxis(pos[MEM_PITCH]);
     Joystick.setEffectParams(effects);
     Joystick.getForce(forces);
 
@@ -89,4 +106,5 @@ void updateEffects(bool recalculate){
           log(10,forces[MEM_PITCH]);
     }
     #endif
+
 }
