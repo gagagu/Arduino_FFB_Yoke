@@ -19,7 +19,7 @@
 */
 
 #include "Joystick.h"
-#include "../config.h"
+//#include "../config.h"
 #include "FFBDescriptor.h"
 #include "filters.h"
 #ifdef damperSplineGain

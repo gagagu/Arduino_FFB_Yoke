@@ -1,3 +1,17 @@
+#define default_gain 1.0
+#define friction_gain 0.25
+//#define damperSplineNumPoints 6
+
+// TODO: find proper values for these automatically
+#define frictionMaxPositionChangeCfg 125
+#define inertiaMaxAccelerationCfg 100
+#define damperMaxVelocityCfg 350
+
+// comment out this line if you don't want to have a spline configuration for the damper
+//#define damperSplineGain float damperSplinePoints[2][damperSplineNumPoints] = { \
+    {0, 0, 2500, 6000, 10000, 10000}, \
+    {0, 0, 250, 4000, 5000, 5000}}
+
 unsigned long lastEffectsUpdate = 0;    // count millis for next effect calculation
 int16_t lastX;                          // X value from last loop
 int16_t lastY;                          // Y value from last loop
@@ -10,7 +24,7 @@ EffectParams effects[2];            // stored effect parameters
 
 void setupJoystick() {
     setRangeJoystick();
-    Joystick.begin();
+    Joystick.begin(false);
     Gains gains[FFB_AXIS_COUNT];
     gains[MEM_ROLL].frictionGain = friction_gain;
     gains[MEM_PITCH].frictionGain = friction_gain;

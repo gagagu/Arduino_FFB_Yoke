@@ -171,7 +171,8 @@ void DriveMotors() {
   }
 
   //  if roll is on end switch then stop the motor
-  if (buttonPinStates[ADJ_ENDSWITCH_ROLL_LEFT] == 0 || buttonPinStates[ADJ_ENDSWITCH_ROLL_RIGHT] == 0) 
+  if (buttonPinStates[ADJ_ENDSWITCH_ROLL_LEFT] == 0 || buttonPinStates[ADJ_ENDSWITCH_ROLL_RIGHT] == 0) // ir sensor
+  //if (buttonPinStates[ADJ_ENDSWITCH_ROLL_LEFT] > 0 || buttonPinStates[ADJ_ENDSWITCH_ROLL_RIGHT] > 0) // microswitch
   {
     analogWrite(ROLL_L_PWM, 0);  // stop left
     analogWrite(ROLL_R_PWM, 0);  // stop right
@@ -255,13 +256,15 @@ void CheckCalibrationMode() {
         LcdPrintCalibrationAxesUpdate();
       }
       // if roll left end switch is reached save value
-      if (buttonPinStates[ADJ_ENDSWITCH_ROLL_LEFT] > 0 && calibration_mode_roll_min) {
+      if (buttonPinStates[ADJ_ENDSWITCH_ROLL_LEFT] == 0 && calibration_mode_roll_min) {  //ir sensor
+      //if (buttonPinStates[ADJ_ENDSWITCH_ROLL_LEFT] > 0 && calibration_mode_roll_min) {  //microswitch
         poti_roll_min = counterRoll.read();
         calibration_mode_roll_min = false;
         LcdPrintCalibrationAxesUpdate();
       }
       // if roll right end switch is reached save value
-      if (buttonPinStates[ADJ_ENDSWITCH_ROLL_RIGHT] > 0 && calibration_mode_roll_max) {
+      if (buttonPinStates[ADJ_ENDSWITCH_ROLL_RIGHT] == 0 && calibration_mode_roll_max) {   // ir sensor
+      //if (buttonPinStates[ADJ_ENDSWITCH_ROLL_RIGHT] > 0 && calibration_mode_roll_max) {  // microswitch
         poti_roll_max = counterRoll.read();
         calibration_mode_roll_max = false;
         LcdPrintCalibrationAxesUpdate();
@@ -387,7 +390,6 @@ void ReadMux() {
     // disblae mux
     PORTD = PORTD | B00010000; // Digital Pin 4 - PortD4
   }//for
-  Serial.println("");
 
   // debug
 #ifdef DEBUG

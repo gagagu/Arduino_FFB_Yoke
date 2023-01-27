@@ -1,8 +1,8 @@
 
 #define languageEN  // Special thank to Lollo for the inspiration and code
+#define SERIAL_BAUD 115200  // Baudrate
 
 #include "src/Joystick.h"
-#include "config.h"
 #include <LiquidCrystal.h>
 #include <Encoder.h> //https://github.com/PaulStoffregen/Encoder
 
@@ -62,6 +62,7 @@ LiquidCrystal lcd(12, 7,A0,A1,A2,A3); // init library for lcd display
 Encoder counterRoll(0, 1);            // init encoder library for roll ir sensor
 Encoder counterPitch(3,2);            // init encoder library for pitch ir sensor
 
+
 /********************************
      initial setup
 *******************************/
@@ -94,7 +95,8 @@ void loop() {
     ReadMux();                                                        // Read values from buttons and potis (except yoke axes)
     CheckCalibrationMode();                                           // check if calibration an do it
     UpdateJoystickButtons();                                          // evaluate joystick buttons and send it to system                                
-
+    Joystick.sendState();
+    
     if (currentMillis >= nextEffectsMillis) {                         // we calculate condition forces every 100ms or more frequently if we get position updates
       updateEffects(true);                                            // update/calculate new effect paraeters
       nextEffectsMillis = currentMillis + 100;                        // set time for new effect loop
@@ -106,9 +108,20 @@ void loop() {
 
     DriveMotors();                                                    // move motors
     nextJoystickMillis = currentMillis + 2;                           // set time for new joystick loop
+ 
+
+    SerialEvent();
 
 #ifdef DEBUG
-    Serial.println("");
+    //Serial.println("");
 #endif
   } //nextJoystickMillis
 } // loop
+
+
+void SerialEvent() {
+//  while (Serial.available()) {
+//    char inChar = (char)Serial.read();
+//     Serial.println(inChar);
+// }
+}
