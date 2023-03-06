@@ -136,7 +136,7 @@ protected:
 
 private:
   #ifdef _VARIANT_ARDUINO_DUE_X_
-      uint32_t epType[2];
+      uint16_t epType[2];
   #else
       uint8_t epType[2];
   #endif

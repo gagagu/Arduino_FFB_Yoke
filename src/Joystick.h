@@ -55,38 +55,56 @@
 #define JOYSTICK_TYPE_GAMEPAD              0x05
 #define JOYSTICK_TYPE_MULTI_AXIS           0x08
 
-#define FORCE_FEEDBACK_MAXGAIN              1.0
+//#define FORCE_FEEDBACK_MAXGAIN              1.0
+#define FORCE_FEEDBACK_MAXGAIN              100
 //#define DEG_TO_RAD              ((float)((float)3.14159265359 / 180.0)) // double definition
 
+// struct Gains{
+    // float totalGain         = FORCE_FEEDBACK_MAXGAIN;
+	// float constantGain      = FORCE_FEEDBACK_MAXGAIN;
+	// float rampGain          = FORCE_FEEDBACK_MAXGAIN;
+	// float squareGain        = FORCE_FEEDBACK_MAXGAIN;
+	// float sineGain          = FORCE_FEEDBACK_MAXGAIN;
+	// float triangleGain      = FORCE_FEEDBACK_MAXGAIN;
+	// float sawtoothdownGain  = FORCE_FEEDBACK_MAXGAIN;
+	// float sawtoothupGain    = FORCE_FEEDBACK_MAXGAIN;
+	// float springGain        = FORCE_FEEDBACK_MAXGAIN;
+	// float damperGain        = FORCE_FEEDBACK_MAXGAIN;
+	// float inertiaGain       = FORCE_FEEDBACK_MAXGAIN;
+	// float frictionGain      = FORCE_FEEDBACK_MAXGAIN;
+	// float customGain        = FORCE_FEEDBACK_MAXGAIN;
+	// float defaultSpringGain = 0.0;
+// };
+
 struct Gains{
-    float totalGain         = FORCE_FEEDBACK_MAXGAIN;
-	float constantGain      = FORCE_FEEDBACK_MAXGAIN;
-	float rampGain          = FORCE_FEEDBACK_MAXGAIN;
-	float squareGain        = FORCE_FEEDBACK_MAXGAIN;
-	float sineGain          = FORCE_FEEDBACK_MAXGAIN;
-	float triangleGain      = FORCE_FEEDBACK_MAXGAIN;
-	float sawtoothdownGain  = FORCE_FEEDBACK_MAXGAIN;
-	float sawtoothupGain    = FORCE_FEEDBACK_MAXGAIN;
-	float springGain        = FORCE_FEEDBACK_MAXGAIN;
-	float damperGain        = FORCE_FEEDBACK_MAXGAIN;
-	float inertiaGain       = FORCE_FEEDBACK_MAXGAIN;
-	float frictionGain      = FORCE_FEEDBACK_MAXGAIN;
-	float customGain        = FORCE_FEEDBACK_MAXGAIN;
-	float defaultSpringGain = 0.0;
+    byte totalGain         = FORCE_FEEDBACK_MAXGAIN;
+	byte constantGain      = FORCE_FEEDBACK_MAXGAIN;
+	byte rampGain          = FORCE_FEEDBACK_MAXGAIN;
+	byte squareGain        = FORCE_FEEDBACK_MAXGAIN;
+	byte sineGain          = FORCE_FEEDBACK_MAXGAIN;
+	byte triangleGain      = FORCE_FEEDBACK_MAXGAIN;
+	byte sawtoothdownGain  = FORCE_FEEDBACK_MAXGAIN;
+	byte sawtoothupGain    = FORCE_FEEDBACK_MAXGAIN;
+	byte springGain        = FORCE_FEEDBACK_MAXGAIN;
+	byte damperGain        = FORCE_FEEDBACK_MAXGAIN;
+	byte inertiaGain       = FORCE_FEEDBACK_MAXGAIN;
+	byte frictionGain      = FORCE_FEEDBACK_MAXGAIN;
+	//byte customGain        = FORCE_FEEDBACK_MAXGAIN;
+	byte defaultSpringGain = 0;
 };
 
 struct EffectParams{
-    int32_t springMaxPosition = 0;
-    int32_t springPosition = 0;
+    int16_t springMaxPosition = 0;
+    int16_t springPosition = 0;
 
-    int32_t damperMaxVelocity = 0;
-    int32_t damperVelocity = 0;
+    int16_t damperMaxVelocity = 0;
+    int16_t damperVelocity = 0;
 
-    int32_t inertiaMaxAcceleration = 0;
-    int32_t inertiaAcceleration = 0;
+    int16_t inertiaMaxAcceleration = 0;
+    int16_t inertiaAcceleration = 0;
 
-    int32_t frictionMaxPositionChange = 0;
-    int32_t frictionPositionChange = 0;
+    int16_t frictionMaxPositionChange = 0;
+    int16_t frictionPositionChange = 0;
 };
 
 class Joystick_
@@ -139,20 +157,20 @@ private:
 	EffectParams* m_effect_params;
 
 	///force calculate funtion
-	float NormalizeRange(int32_t x, int32_t maxValue);
-	int32_t ApplyEnvelope(volatile TEffectState& effect, int32_t value);
-	int32_t ApplyGain(uint16_t value, uint8_t gain);
-	int32_t ConstantForceCalculator(volatile TEffectState& effect);
-	int32_t RampForceCalculator(volatile TEffectState& effect);
-	int32_t SquareForceCalculator(volatile TEffectState& effect);
-	int32_t SinForceCalculator(volatile TEffectState& effect);
-	int32_t TriangleForceCalculator(volatile TEffectState& effect);
-	int32_t SawtoothDownForceCalculator(volatile TEffectState& effect);
-	int32_t SawtoothUpForceCalculator(volatile TEffectState& effect);
-	int32_t ConditionForceCalculator(volatile TEffectState& effect, float metric, uint8_t conditionReport);
-	void forceCalculator(int32_t* forces);
+	float NormalizeRange(int16_t x, int16_t maxValue);
+	int16_t ApplyEnvelope(volatile TEffectState& effect, int16_t value);
+	int16_t ApplyGain(uint16_t value, uint8_t gain);
+	int16_t ConstantForceCalculator(volatile TEffectState& effect);
+	int16_t RampForceCalculator(volatile TEffectState& effect);
+	int16_t SquareForceCalculator(volatile TEffectState& effect);
+	int16_t SinForceCalculator(volatile TEffectState& effect);
+	int16_t TriangleForceCalculator(volatile TEffectState& effect);
+	int16_t SawtoothDownForceCalculator(volatile TEffectState& effect);
+	int16_t SawtoothUpForceCalculator(volatile TEffectState& effect);
+	int16_t ConditionForceCalculator(volatile TEffectState& effect, float metric, uint8_t conditionReport);
+	void forceCalculator(int16_t* forces);
 	float getAngleRatio(volatile TEffectState& effect, int axis);
-	int32_t getEffectForce(volatile TEffectState& effect, EffectParams _effect_params, uint8_t axis);
+	int16_t getEffectForce(volatile TEffectState& effect, EffectParams _effect_params, uint8_t axis);
 protected:
 	int buildAndSet16BitValue(bool includeValue, int16_t value, int16_t valueMinimum, int16_t valueMaximum, int16_t actualMinimum, int16_t actualMaximum, uint8_t dataLocation[]);
 	int buildAndSetAxisValue(bool includeAxis, int16_t axisValue, int16_t axisMinimum, int16_t axisMaximum, uint8_t dataLocation[]);
@@ -237,7 +255,7 @@ public:
 	void sendState();
 
 	//force feedback Interfaces
-	void getForce(int32_t* forces);
+	void getForce(int16_t* forces);
 
 
     Gains *getGains() {

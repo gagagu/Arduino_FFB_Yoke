@@ -23,46 +23,21 @@
 #define MUX_SIGNAL_INPUT A4
 
 // Adjustments array positions
-#define ADJ_ENDSWITCH_PITCH_DOWN 16
-#define ADJ_ENDSWITCH_PITCH_UP 17
-#define ADJ_ENDSWITCH_ROLL_LEFT 18
-#define ADJ_ENDSWITCH_ROLL_RIGHT 19
+#define ADJ_ENDSWITCH_PITCH_DOWN 0
+#define ADJ_ENDSWITCH_PITCH_UP 1
+#define ADJ_ENDSWITCH_ROLL_LEFT 2
+#define ADJ_ENDSWITCH_ROLL_RIGHT 3
+#define ADJ_BUTTON_CALIBRATION 4
 
-#define ADJ_BUTTON_CALIBRATION 20
-
-#define ADJ_POTI_PITCH_FORCE_MAX 0
-#define ADJ_POTI_PITCH_PWM_MAX 1
-#define ADJ_POTI_PITCH_PWM_MIN 2
-
-#define ADJ_POTI_ROLL_FORCE_MAX 3
-#define ADJ_POTI_ROLL_PWM_MAX 4
-#define ADJ_POTI_ROLL_PWM_MIN 5
 
 // variables for Speed calculation
-int roll_speed = 0;
-int pitch_speed = 0;
+byte roll_speed = 0;
+byte pitch_speed = 0;
 
-// maximum and minimum poti values for roll
-int poti_roll_min = 0;                                //Potentiometer min for Init;
-int poti_roll_max = 1023;                             //Potentiometer max for Init;
+// variables for button pin states
+uint16_t iYokeButtonPinStates = 0;
+uint16_t iSensorPinStates = 0;
 
-// maximum and minimum poti values for pitch
-int poti_pitch_min = 0;                               //Potentiometer min for Init;
-int poti_pitch_max = 1023;                            //Potentiometer max for Init;
-
-// potis
-int adjustments_input[6] = {0, 0, 0, 0, 0, 0};
-
-// flags for calibration mode
-bool calibration_mode_roll_min = false;
-bool calibration_mode_roll_max = false;
-bool calibration_mode_pitch_min = false;
-bool calibration_mode_pitch_max = false;
-
-// buffer for buttons
-bool buttonPinStates[] = {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
-                          false, false, false, false, false, false, false, false, false, false
-                         };
 /***************
   Pin setup
 ****************/
@@ -116,7 +91,7 @@ void ArduinoSetup()
 
   // Timer4: pin 13 & 6
   TCCR4B = _BV(CS40); // change the PWM frequencey to 31.25kHz - pin 13 & 6
-}
+} //ArduinoSetup
 
 /**************************
   Enables the motordrivers
@@ -124,7 +99,7 @@ void ArduinoSetup()
 void EnableMotors() {
   digitalWrite(PITCH_EN, HIGH);
   digitalWrite(ROLL_EN, HIGH);
-}
+} //EnableMotors
 
 /***************************
   Disables the motordrivers
@@ -132,146 +107,166 @@ void EnableMotors() {
 void DisableMotors() {
   digitalWrite(PITCH_EN, LOW);
   digitalWrite(ROLL_EN, LOW);
+
   analogWrite(ROLL_L_PWM, 0);  // stop left
   analogWrite(ROLL_R_PWM, 0);  // stop right
   roll_speed = 0;              // speed to 0
+
   analogWrite(PITCH_L_PWM, 0);  // stop left
   analogWrite(PITCH_R_PWM, 0);  // stop right
   pitch_speed = 0;              // speed to 0
-}
+} //DisableMotors
 
 /******************************************************
   calculates the motor speeds and controls the motors
 ******************************************************/
 void DriveMotors() {
+  // calculate motor speed for pitch direction
+  CalculateSpeed(pitch_speed,
+                 (iSensorPinStates & (1 << ADJ_ENDSWITCH_PITCH_DOWN)),
+                 (iSensorPinStates & (1 << ADJ_ENDSWITCH_PITCH_UP)),
+                 PITCH_R_PWM,
+                 PITCH_L_PWM,
+                 forces[MEM_PITCH],
+                 adjForceMax[MEM_PITCH],
+                 adjPwmMin[MEM_PITCH],
+                 adjPwmMax[MEM_PITCH]);
 
-  // if pitch is on end switch then stop the motor
-  if (buttonPinStates[ADJ_ENDSWITCH_PITCH_DOWN] == 0 || buttonPinStates[ADJ_ENDSWITCH_PITCH_UP] == 0)
-  {
-    analogWrite(PITCH_L_PWM, 0);  // stop left
-    analogWrite(PITCH_R_PWM, 0);  // stop right
-    pitch_speed = 0;              // speed to 0
-  }
-  else {
-    int32_t pForce = constrain(abs(forces[MEM_PITCH]), 0, adjustments_input[ADJ_POTI_PITCH_FORCE_MAX]);     // cut force to maximum value
-    pitch_speed = map(pForce, 0,
-                      adjustments_input[ADJ_POTI_PITCH_FORCE_MAX],
-                      adjustments_input[ADJ_POTI_PITCH_PWM_MIN],
-                      adjustments_input[ADJ_POTI_PITCH_PWM_MAX]);                                           // calculate motor speed (pwm) by force between min pwm and max pwm speed
-
-    // which direction?
-    if (forces[MEM_PITCH] > 0) {
-      analogWrite(PITCH_R_PWM, 0);            // stop right
-      analogWrite(PITCH_L_PWM, pitch_speed);  // speed up left
-    }
-    else {
-      analogWrite(PITCH_L_PWM, 0);            // stop left
-      analogWrite(PITCH_R_PWM, pitch_speed);  // speed up right
-    }
-  }
-
-  //  if roll is on end switch then stop the motor
-  if (buttonPinStates[ADJ_ENDSWITCH_ROLL_LEFT] == 0 || buttonPinStates[ADJ_ENDSWITCH_ROLL_RIGHT] == 0) // ir sensor
-  //if (buttonPinStates[ADJ_ENDSWITCH_ROLL_LEFT] > 0 || buttonPinStates[ADJ_ENDSWITCH_ROLL_RIGHT] > 0) // microswitch
-  {
-    analogWrite(ROLL_L_PWM, 0);  // stop left
-    analogWrite(ROLL_R_PWM, 0);  // stop right
-    roll_speed = 0;              // speed to 0
-  }
-  else {
-    int32_t rForce = constrain(abs(forces[MEM_ROLL]), 0, adjustments_input[ADJ_POTI_ROLL_FORCE_MAX]);     // cut force to maximum value
-    roll_speed = map(rForce, 0,
-                     adjustments_input[ADJ_POTI_ROLL_FORCE_MAX],
-                     adjustments_input[ADJ_POTI_ROLL_PWM_MIN],
-                     adjustments_input[ADJ_POTI_ROLL_PWM_MAX]);                                  // calculate motor speed (pwm) by force between min pwm and max pwm speed
-
-    // which direction?
-    if (forces[MEM_ROLL] > 0) {
-      analogWrite(ROLL_R_PWM, 0);           // stop right
-      analogWrite(ROLL_L_PWM, roll_speed);  // speed up left
-    }
-    else {
-      analogWrite(ROLL_L_PWM, 0);           // stop left
-      analogWrite(ROLL_R_PWM, roll_speed);  // speed up right
-    }
-  }
-
-#ifdef DEBUG
-  log(19, roll_speed);
-  log(20, pitch_speed);
-#endif
+  // calculate motor speed for roll direction
+  CalculateSpeed(roll_speed,
+                 (iSensorPinStates & (1 << ADJ_ENDSWITCH_ROLL_LEFT)),
+                 (iSensorPinStates & (1 << ADJ_ENDSWITCH_ROLL_RIGHT)),
+                 ROLL_L_PWM,
+                 ROLL_R_PWM,
+                 forces[MEM_ROLL],
+                 adjForceMax[MEM_ROLL],
+                 adjPwmMin[MEM_ROLL],
+                 adjPwmMax[MEM_ROLL]);
 } //DriveMotors
 
-/*
-   Check if calibration mode is started
-*/
-void CheckCalibrationMode() {
-  // is button pressed?
-  if (buttonPinStates[ADJ_BUTTON_CALIBRATION] == true) {
-    // read again for debouncing
-    while (buttonPinStates[ADJ_BUTTON_CALIBRATION] == true) {
-      delay(1);
-      ReadMux();
+/******************************************************
+  calculates the motor speeds
+******************************************************/
+int CalculateSpeed(byte &rSpeed,
+                   bool blEndswitchDown,
+                   bool blEndswitchUp,
+                   byte pinLPWM,
+                   byte pinRPWM,
+                   int16_t gForce,
+                   int forceMax,
+                   byte pwmMin,
+                   byte pwmMax)
+{
+  // if position is on end switch then stop the motor
+  if (blEndswitchDown == 0 || blEndswitchUp == 0)
+  {
+    analogWrite(pinLPWM, 0);  // stop left
+    analogWrite(pinRPWM, 0);  // stop right
+    rSpeed = 0;              // speed to 0
+  }
+  else {
+    // cut force to maximum value
+    int pForce = constrain(abs(gForce), 0, forceMax);
+    // calculate motor speed (pwm) by force between min pwm and max pwm speed
+    rSpeed = map(pForce, 0, forceMax, pwmMin, pwmMax);
+
+    // which direction?
+    if (gForce > 0) {
+      analogWrite(pinRPWM, 0);       // stop right
+      analogWrite(pinLPWM, rSpeed);  // speed up left
     }
-    // set flag for all directions
-    calibration_mode_roll_min = true;
-    calibration_mode_roll_max = true;
-    calibration_mode_pitch_min = true;
-    calibration_mode_pitch_max = true;
+    else {
+      analogWrite(pinLPWM, 0);       // stop left
+      analogWrite(pinRPWM, rSpeed);  // speed up right
+    }
+  }
+} //CalculateSpeed
+
+/******************************************************
+  Calibration
+******************************************************/
+void CheckCalibrationMode() {
+  // is calibration button pressed or system started
+  if ((iSensorPinStates & (1 << ADJ_BUTTON_CALIBRATION)) || blStart == true) {
+    // read again for debouncing button, not needed for start
+    if (blStart == false)
+    {
+      while (iSensorPinStates & (1 << ADJ_BUTTON_CALIBRATION)) {
+        delay(1);
+        ReadMux();
+      }
+    } else {
+      blStart = false;
+    }
+
+    // maximum and minimum counter values for roll
+    int poti_roll_min = -32768;                             //counter min for Init;
+    int poti_roll_max = -32768;                             //counter max for Init;
+
+    // maximum and minimum counter values for pitch
+    int poti_pitch_min = -32768;                             //counter min for Init;
+    int poti_pitch_max = -32768;                            //counter max for Init;
+
     // dsiable motor
     DisableMotors();
     // Print message to display for center position
     LcdPrintCalibrationMiddle();
 
-    // wait for button press
-    while (buttonPinStates[ADJ_BUTTON_CALIBRATION] == false) {
+    // wait for button press to measure center
+    while ((iSensorPinStates & (1 << ADJ_BUTTON_CALIBRATION)) == LOW) {
       delay(1);
       ReadMux();
     }
-    // reset counters
+
+    // reset counters to zero
     counterRoll.readAndReset();
     counterPitch.readAndReset();
-    // small wait
-    delay(1000);
+
+    // small wait; not really needed but nicer in behavior
+    delay(500);
+
     // print message to display for moving to all axes end
     LcdPrintCalibrationAxesStart();
-    // wait until all axes are received
-    while (calibration_mode_roll_min
-           || calibration_mode_roll_max
-           || calibration_mode_pitch_min
-           || calibration_mode_pitch_max)
+
+    // do until all axes are received
+    while (poti_roll_min == -32768 || poti_roll_max == -32768 || poti_pitch_min == -32768 || poti_pitch_max == -32768)
     {
-      // read values
+      // read end switches to detect changes
       ReadMux();
+
       // if pitch down end switch is reached save value
-      if (buttonPinStates[ADJ_ENDSWITCH_PITCH_DOWN] == 0 && calibration_mode_pitch_min) {
+      if ((iSensorPinStates & (1 << ADJ_ENDSWITCH_PITCH_DOWN)) == LOW) {
         poti_pitch_min = counterPitch.read();
-        calibration_mode_pitch_min = false;
-        LcdPrintCalibrationAxesUpdate();
       }
+
       // if pitch up end switch is reached save value
-      if (buttonPinStates[ADJ_ENDSWITCH_PITCH_UP] == 0 && calibration_mode_pitch_max) {
+      if ((iSensorPinStates & (1 << ADJ_ENDSWITCH_PITCH_UP)) == LOW) {
         poti_pitch_max = counterPitch.read();
-        calibration_mode_pitch_max = false;
-        LcdPrintCalibrationAxesUpdate();
       }
+
       // if roll left end switch is reached save value
-      if (buttonPinStates[ADJ_ENDSWITCH_ROLL_LEFT] == 0 && calibration_mode_roll_min) {  //ir sensor
-      //if (buttonPinStates[ADJ_ENDSWITCH_ROLL_LEFT] > 0 && calibration_mode_roll_min) {  //microswitch
+      if ((iSensorPinStates & (1 << ADJ_ENDSWITCH_ROLL_LEFT)) == LOW) {  //ir sensor
+        //Serial.println("left");
         poti_roll_min = counterRoll.read();
-        calibration_mode_roll_min = false;
-        LcdPrintCalibrationAxesUpdate();
       }
+
       // if roll right end switch is reached save value
-      if (buttonPinStates[ADJ_ENDSWITCH_ROLL_RIGHT] == 0 && calibration_mode_roll_max) {   // ir sensor
-      //if (buttonPinStates[ADJ_ENDSWITCH_ROLL_RIGHT] > 0 && calibration_mode_roll_max) {  // microswitch
+      if ((iSensorPinStates & (1 << ADJ_ENDSWITCH_ROLL_RIGHT)) == LOW) {   // ir sensor
+        //Serial.println("right");
         poti_roll_max = counterRoll.read();
-        calibration_mode_roll_max = false;
-        LcdPrintCalibrationAxesUpdate();
+      }
+
+      // Update display on every endswitch change state
+      if ((iSensorPinStates & (1 << ADJ_ENDSWITCH_PITCH_DOWN)) == LOW
+          || (iSensorPinStates & (1 << ADJ_ENDSWITCH_PITCH_UP)) == LOW
+          || (iSensorPinStates & (1 << ADJ_ENDSWITCH_ROLL_LEFT)) == LOW
+          || (iSensorPinStates & (1 << ADJ_ENDSWITCH_ROLL_RIGHT)) == LOW
+         ) {
+        LcdPrintCalibrationAxesUpdate(poti_roll_min, poti_roll_max, poti_pitch_max, poti_pitch_min);
       }
     } // while
 
-    // calculate max values for Joystick axes 
+    // calculate max values for Joystick axes
     // this uses the absolute values
     // e.g. (-201) and (+200) means 201 for max valuev
     // e.g. (-198) and (+200) means 200 for max value
@@ -292,182 +287,138 @@ void CheckCalibrationMode() {
       JOYSTICK_minX = abs(poti_roll_max) * (-1);
       JOYSTICK_maxX = abs(poti_roll_max);
     }
-    // wait to give the user time so read the last value
+    // wait to give the user time so read the last value from display
     delay(3000);
+
     // set the new Joystick range
     setRangeJoystick();
-    // clear display
-    lcd.clear();
+
     // enable motors
     EnableMotors();
-  } else {
-    // no calibration than show adjustment values to display
-    LcdPrintAdjustmendValues();
-  }
-} // CheckCalibrationMode
 
+    // show adjustment values again
+    LcdPrintAdjustmendValues();
+
+  } // button not pressed
+} // CheckCalibrationMode
 
 /******************************************
    Reads the button states over multiplexer
 *******************************************/
 void ReadMux() {
-  // A0=PF7 = S0
-  // A1=PF6 = S1
-  // A2=PF5 = S2
-  // A3=PF4 =  S3
+  iYokeButtonPinStates = 0;
+  iSensorPinStates = 0;
 
+  // for every 16 imput lines of a multiplexer
   for (byte x = 0; x < 16; x++) {
-    // s0 = Pin A0 - PortD4
-    if (x & B00000001)
+    // direct port manipulation is faster than digitalwrite!
+    // s0 = Pin A0 - PF7
+    if (x & B00000001) // if bit 0 of counter is high
     {
-      PORTF = PORTF | B10000000;
+      PORTF = PORTF | B10000000;  // set bit 7 of port (A0)
     } else {
-      PORTF = PORTF & B01111111;
+      PORTF = PORTF & B01111111;  // clear bit 7 of port (A0)
     }
 
-    // s1 =  Pin A1 - PortC6
-    if (x & B00000010)
+    // s1 =  Pin A1 - PF6
+    if (x & B00000010)  // if bit 1 of counter is high
     {
-      PORTF = PORTF | B01000000;
+      PORTF = PORTF | B01000000;  // set bit 6 of port (A1)
     } else {
-      PORTF = PORTF & B10111111;
+      PORTF = PORTF & B10111111;  // clear bit 6 of port (A1)
     }
 
-    // s2 = Pin A2 PortD0
-    if (x & B00000100)
+    // s2 = Pin A2 PF5
+    if (x & B00000100) // if bit 2 of counter is high
     {
-      PORTF = PORTF | B00100000;
+      PORTF = PORTF | B00100000;  // set bit 5 of port (A2)
     } else {
-      PORTF = PORTF & B11011111;
+      PORTF = PORTF & B11011111; // clear bit 5 of port (A2)
     }
 
-    // s3 = Pin A3 - PortE6
-    if (x & B00001000)
+    // s3 = Pin A3 - PF4
+    if (x & B00001000) // if bit 3 of counter is high
     {
-      PORTF = PORTF | B00010000;
+      PORTF = PORTF | B00010000; // set bit 4 of port (A3)
     } else {
-      PORTF = PORTF & B11101111;
+      PORTF = PORTF & B11101111; // clear bit 4 of port (A3)
     }
 
     // enable mux 1
     PORTC = PORTC & B10111111; // Digital Pin 5 - PortC6
-    // wait
+
+    // wait for capacitors of mux to react
     delayMicroseconds(1);
+
     // read value
-    buttonPinStates[x] = digitalRead(MUX_SIGNAL_YOKE);
-    // disblae mux1
+    if (x == 0)
+    {
+      iYokeButtonPinStates = digitalRead(MUX_SIGNAL_YOKE) << x;
+    } else {
+      iYokeButtonPinStates |= digitalRead(MUX_SIGNAL_YOKE) << x;
+    }
+
+    // disable mux1
     PORTC = PORTC | B01000000; // Digital Pin 5 - PortC6
 
     // enable mux 2
     PORTD = PORTD & B11101111; // Digital Pin 4 - PortD4
-    // wait
+
+    // wait for capacitors of mux to react
     delayMicroseconds(1);
 
-    if (x < 10) {
-      buttonPinStates[x + 16] = digitalRead(MUX_SIGNAL_INPUT);
+    // read value
+    iSensorPinStates |= digitalRead(MUX_SIGNAL_INPUT) << x;
+
+    if (x == 0)
+    {
+      iSensorPinStates = digitalRead(MUX_SIGNAL_INPUT) << x;
     } else {
-      switch(x-10){
-        case 0:
-          adjustments_input[ADJ_POTI_PITCH_FORCE_MAX] = map(analogRead(MUX_SIGNAL_INPUT), 0, 1023, 0, 32767);
-          break;
-        case 1:
-          adjustments_input[ADJ_POTI_PITCH_PWM_MAX] = map(analogRead(MUX_SIGNAL_INPUT), 0, 1023, 0, 255);
-          break;
-        case 2:
-          adjustments_input[ADJ_POTI_PITCH_PWM_MIN] = map(analogRead(MUX_SIGNAL_INPUT), 0, 1023, 0, 255);
-          break;
-        case 3:
-          adjustments_input[ADJ_POTI_ROLL_FORCE_MAX] = map(analogRead(MUX_SIGNAL_INPUT), 0, 1023, 0, 32767);
-          break;
-        case 4:
-          adjustments_input[ADJ_POTI_ROLL_PWM_MAX] = map(analogRead(MUX_SIGNAL_INPUT), 0, 1023, 0, 255);
-          break;
-        case 5:
-          adjustments_input[ADJ_POTI_ROLL_PWM_MIN] = map(analogRead(MUX_SIGNAL_INPUT), 0, 1023, 0, 255);
-          break;             
-      }
+      iSensorPinStates |= digitalRead(MUX_SIGNAL_INPUT) << x;
     }
-    // disblae mux
+
+    // disblae mux 2
     PORTD = PORTD | B00010000; // Digital Pin 4 - PortD4
+
   }//for
 
-  // debug
-#ifdef DEBUG
-  log(21, buttonPinStates[ADJ_ENDSWITCH_PITCH_DOWN]);
-  log(22, buttonPinStates[ADJ_ENDSWITCH_PITCH_UP]);
-  log(23, buttonPinStates[ADJ_ENDSWITCH_ROLL_LEFT]);
-  log(24, buttonPinStates[ADJ_ENDSWITCH_ROLL_RIGHT]);
-  log(25, buttonPinStates[ADJ_BUTTON_CALIBRATION]);
-  log(26, 0);//adjustments_input[ADJ_POTI_PITCH_FORCE_MAX]);
-  log(27, 0);//adjustments_input[ADJ_POTI_PITCH_PWM_MAX]);
-  log(28, 0);//adjustments_input[ADJ_POTI_PITCH_PWM_MIN]);
-  log(29, 0);//adjustments_input[ADJ_POTI_ROLL_FORCE_MAX]);
-  log(30, 0);//adjustments_input[ADJ_POTI_ROLL_PWM_MAX]);
-  log(31, 0);//adjustments_input[ADJ_POTI_ROLL_PWM_MIN]);
-#endif
 }// ReadMux
 
+/******************************************
+   set button states to Joystick library
+*******************************************/
 void UpdateJoystickButtons() {
-  //decode HatSwitch Positions
-  if (buttonPinStates[2] == false &&  buttonPinStates[0] == false && buttonPinStates[1] == false && buttonPinStates[3] == false)
-    Joystick.setHatSwitch(0, -1); // no direction
+  // detect hat switch position
+  if ( iYokeButtonPinStates << 12 == 0B0000000000000000)
+    Joystick.setHatSwitch(0, -1);   // no direction
 
-  if (buttonPinStates[2] == true &&  buttonPinStates[0] == false && buttonPinStates[1] == false && buttonPinStates[3] == false)
-    Joystick.setHatSwitch(0, 0);     // up
+  if ( iYokeButtonPinStates << 12 == 0B0100000000000000)
+    Joystick.setHatSwitch(0, 0);    // up
 
-  if (buttonPinStates[2] == true &&  buttonPinStates[0] == true && buttonPinStates[1] == false && buttonPinStates[3] == false)
-    Joystick.setHatSwitch(0, 45);    // up right
+  if ( iYokeButtonPinStates << 12 == 0B0101000000000000)
+    Joystick.setHatSwitch(0, 45);   // up right
 
-  if (buttonPinStates[2] == false &&  buttonPinStates[0] == true && buttonPinStates[1] == false && buttonPinStates[3] == false)
-    Joystick.setHatSwitch(0, 90);    // right
+  if ( iYokeButtonPinStates << 12 == 0B0001000000000000)
+    Joystick.setHatSwitch(0, 90);   // right
 
-  if (buttonPinStates[2] == false &&  buttonPinStates[0] == true && buttonPinStates[1] == true && buttonPinStates[3] == false)
-    Joystick.setHatSwitch(0, 135);   // down right
+  if ( iYokeButtonPinStates << 12 == 0B0011000000000000)
+    Joystick.setHatSwitch(0, 135);  // down right
 
-  if (buttonPinStates[2] == false &&  buttonPinStates[0] == false && buttonPinStates[1] == true && buttonPinStates[3] == false)
-    Joystick.setHatSwitch(0, 180);   // down
+  if ( iYokeButtonPinStates << 12 == 0B0010000000000000)
+    Joystick.setHatSwitch(0, 180);  // down
 
-  if (buttonPinStates[2] == false &&  buttonPinStates[0] == false && buttonPinStates[1] == true && buttonPinStates[3] == true)
+  if ( iYokeButtonPinStates << 12 == 0B1010000000000000)
     Joystick.setHatSwitch(0, 225);   // down left
 
-  if (buttonPinStates[2] == false &&  buttonPinStates[0] == false && buttonPinStates[1] == false && buttonPinStates[3] == true)
-    Joystick.setHatSwitch(0, 270);   // left
+  if ( iYokeButtonPinStates << 12 == 0B1000000000000000)
+    Joystick.setHatSwitch(0, 270);  // left
 
-  if (buttonPinStates[2] == true &&  buttonPinStates[0] == false && buttonPinStates[1] == false && buttonPinStates[3] == true)
+  if ( iYokeButtonPinStates << 12 == 0B1100000000000000)
     Joystick.setHatSwitch(0, 315);  // up left
 
   // read button states from multiplexer
-  for (byte channel = 0; channel < 16; channel++)
+  for (byte channel = 4; channel < 16; channel++)
   {
-    if (channel >= 4)
-    {
-      Joystick.setButton(channel - 4, buttonPinStates[channel]);
-    }
-#ifdef DEBUG
-    log(32 + channel,  buttonPinStates[channel]);
-#endif
+    Joystick.setButton(channel - 4, (iYokeButtonPinStates & (1 << channel)) >> channel);
   }
 } //updateJoystickButtons
-
-
-
-void log(byte key, int16_t value) {
-  Serial.print(key);
-  Serial.print(":");
-  Serial.print(value);
-  Serial.print(" ");
-}
-
-void log(byte key, bool value) {
-  Serial.print(key);
-  Serial.print(":");
-  Serial.print(value);
-  Serial.print(" ");
-}
-
-void log(byte key, int32_t value) {
-  Serial.print(key);
-  Serial.print(":");
-  Serial.print(value);
-  Serial.print(" ");
-}

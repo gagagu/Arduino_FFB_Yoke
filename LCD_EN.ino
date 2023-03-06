@@ -1,40 +1,53 @@
- #if defined(languageEN)
+ #if defined(languageEN) // language englisch
 
+/******************************************
+  Into
+*******************************************/
 void LcdPrintIntro() {
   lcd.setCursor(0, 0);
   lcd.print(F("       Arduino      "));
   lcd.print(F("Force-Feedback-Yoke "));
   lcd.print(F("Created by GaGaGu   "));
-  lcd.print(F("                v1.2"));
+  lcd.print(F("                v1.3"));
 }
 
+/******************************************
+  show adjustment values (max force, pwm)
+*******************************************/
 void LcdPrintAdjustmendValues() {
+  lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print(F("Roll  Force:        "));
-  lcd.setCursor(13, 0);
-  lcd.print(adjustments_input[ADJ_POTI_ROLL_FORCE_MAX]);
+  lcd.print(F("Roll  Force: "));
+  lcd.print(adjForceMax[MEM_ROLL]);
 
   lcd.setCursor(0, 1);
-  lcd.print(F("  PWM Mi-Ma:        "));
-  lcd.setCursor(13, 1);
-  lcd.print(adjustments_input[ADJ_POTI_ROLL_PWM_MIN]);
+  lcd.print(F("  PWM Mi-Ma: "));
+  lcd.print(adjPwmMin[MEM_ROLL]);
   lcd.print(F("-"));
-  lcd.print(adjustments_input[ADJ_POTI_ROLL_PWM_MAX]);
+  lcd.print(adjPwmMax[MEM_ROLL]);
     
   lcd.setCursor(0, 2);
-  lcd.print(F("Pitch Force:        "));
-  lcd.setCursor(13, 2);
-  lcd.print(adjustments_input[ADJ_POTI_PITCH_FORCE_MAX]);
+  lcd.print(F("Pitch Force: "));
+  lcd.print(adjForceMax[MEM_PITCH]);
   
   lcd.setCursor(0, 3);
-  lcd.print(F("  PWM Mi-Ma:        "));
-  lcd.setCursor(13, 3);
-  lcd.print(adjustments_input[ADJ_POTI_PITCH_PWM_MIN]);
+  lcd.print(F("  PWM Mi-Ma: "));
+  lcd.print(adjPwmMin[MEM_PITCH]);
   lcd.print(F("-"));
-  lcd.print(adjustments_input[ADJ_POTI_PITCH_PWM_MAX]);
+  lcd.print(adjPwmMax[MEM_PITCH]);
 }
 
-
+/******************************************
+  show debug mode
+*******************************************/
+void LCDPrintDebugMode(){
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print(F("Debug Mode: On"));
+}
+/******************************************
+  show calibration middle
+*******************************************/
 void LcdPrintCalibrationMiddle(){
   lcd.setCursor(0, 0);
   lcd.print(F("Put all axes in the "));
@@ -43,39 +56,36 @@ void LcdPrintCalibrationMiddle(){
   lcd.print(F("ration button       "));
 }
 
+/******************************************
+  show calibration start
+*******************************************/
 void LcdPrintCalibrationAxesStart(){
+  lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print(F("                    "));  
   lcd.print(F("Please move all axes"));
+  lcd.setCursor(0, 1);
   lcd.print(F("to the end positions"));
-  lcd.print(F("                    "));  
 }
 
-void LcdPrintCalibrationAxesUpdate(){
+/******************************************
+  show calibration axes values update
+*******************************************/
+void LcdPrintCalibrationAxesUpdate(int poti_roll_min,int poti_roll_max, int poti_pitch_max, int poti_pitch_min){
+  lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print(F("Left  end:          ")); //Left  end
-  if (!calibration_mode_roll_min) {
-    lcd.setCursor(11, 0);
-    lcd.print(poti_roll_min);
-  }
+  lcd.print(F("Left  end: ")); //Left  end
+  lcd.print(poti_roll_min);
+  
   lcd.setCursor(0, 1);
-  lcd.print(F("Right end:          ")); //right end
-  if (!calibration_mode_roll_max) {
-    lcd.setCursor(11, 1);
-    lcd.print(poti_roll_max);
-  }
+  lcd.print(F("Right end: ")); //right end
+  lcd.print(poti_roll_max);
+
   lcd.setCursor(0, 2);
-  lcd.print(F("Up    end:          ")); // up end
-  if (!calibration_mode_pitch_max) {
-    lcd.setCursor(11, 2);
-    lcd.print(poti_pitch_max);
-  }
+  lcd.print(F("Up    end: ")); // up end
+  lcd.print(poti_pitch_max);
+
   lcd.setCursor(0, 3);
-  lcd.print(F("Down  end:          ")); // down end
-  if (!calibration_mode_pitch_min) {
-    lcd.setCursor(11, 3);
-    lcd.print(poti_pitch_min);
-  }
- 
+  lcd.print(F("Down  end: ")); // down end
+  lcd.print(poti_pitch_min);
 }
 #endif

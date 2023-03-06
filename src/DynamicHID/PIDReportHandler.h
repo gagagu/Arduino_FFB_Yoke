@@ -18,7 +18,7 @@ public:
 	volatile TEffectState  g_EffectStates[MAX_EFFECTS + 1];
 	volatile uint8_t deviceState;
 	//variables for storing previous values
-	volatile int32_t inertiaT = 0;
+	volatile int16_t inertiaT = 0;
 	volatile int16_t oldSpeed = 0;
 	volatile int16_t oldAxisPosition = 0;
 	volatile USB_FFBReport_PIDStatus_Input_Data_t pidState = { 2, 30, 0 };
