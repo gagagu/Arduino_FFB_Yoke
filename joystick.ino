@@ -149,5 +149,6 @@ void updateEffects(bool recalculate) {
   Joystick.setXAxis(counterRoll.read());
   Joystick.setYAxis(counterPitch.read());
   Joystick.setEffectParams(effects);
+
   Joystick.getForce(forces);
 }

@@ -54,27 +54,8 @@
 #define JOYSTICK_TYPE_JOYSTICK             0x04
 #define JOYSTICK_TYPE_GAMEPAD              0x05
 #define JOYSTICK_TYPE_MULTI_AXIS           0x08
-
-//#define FORCE_FEEDBACK_MAXGAIN              1.0
 #define FORCE_FEEDBACK_MAXGAIN              100
-//#define DEG_TO_RAD              ((float)((float)3.14159265359 / 180.0)) // double definition
-
-// struct Gains{
-    // float totalGain         = FORCE_FEEDBACK_MAXGAIN;
-	// float constantGain      = FORCE_FEEDBACK_MAXGAIN;
-	// float rampGain          = FORCE_FEEDBACK_MAXGAIN;
-	// float squareGain        = FORCE_FEEDBACK_MAXGAIN;
-	// float sineGain          = FORCE_FEEDBACK_MAXGAIN;
-	// float triangleGain      = FORCE_FEEDBACK_MAXGAIN;
-	// float sawtoothdownGain  = FORCE_FEEDBACK_MAXGAIN;
-	// float sawtoothupGain    = FORCE_FEEDBACK_MAXGAIN;
-	// float springGain        = FORCE_FEEDBACK_MAXGAIN;
-	// float damperGain        = FORCE_FEEDBACK_MAXGAIN;
-	// float inertiaGain       = FORCE_FEEDBACK_MAXGAIN;
-	// float frictionGain      = FORCE_FEEDBACK_MAXGAIN;
-	// float customGain        = FORCE_FEEDBACK_MAXGAIN;
-	// float defaultSpringGain = 0.0;
-// };
+#define SERIAL_CMD_DEBUG_FORCE_VALUES		8
 
 struct Gains{
     byte totalGain         = FORCE_FEEDBACK_MAXGAIN;
@@ -89,7 +70,6 @@ struct Gains{
 	byte damperGain        = FORCE_FEEDBACK_MAXGAIN;
 	byte inertiaGain       = FORCE_FEEDBACK_MAXGAIN;
 	byte frictionGain      = FORCE_FEEDBACK_MAXGAIN;
-	//byte customGain        = FORCE_FEEDBACK_MAXGAIN;
 	byte defaultSpringGain = 0;
 };
 
@@ -149,6 +129,8 @@ private:
 
 	uint8_t                  _hidReportId;
 	uint8_t                  _hidReportSize; 
+	
+	bool 					_serialPrintForces = false;		// print separat forces to serial plotter?
 
 	//force feedback gain
 	Gains m_gains[FFB_AXIS_COUNT];
@@ -278,6 +260,11 @@ public:
 	    }
 	    return -1;
 	};
+	
+	// debug
+	void startSerialPrintForces(){ _serialPrintForces=true; }
+	void stopSerialPrintForces(){ _serialPrintForces=false; }
+	bool getSerialPrintForces() { return _serialPrintForces; }
 };
 
 #endif // !defined(_USING_DYNAMIC_HID)

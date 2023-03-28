@@ -19,12 +19,9 @@
 */
 
 #include "Joystick.h"
-//#include "../config.h"
+#include "FFBDescriptor.h"
 #include "FFBDescriptor.h"
 #include "filters.h"
-//#ifdef damperSplineGain
-//#include "spline.h"
-//#endif
 #if defined(_USING_DYNAMIC_HID)
 
 #define JOYSTICK_REPORT_ID_INDEX 7
@@ -49,10 +46,6 @@ const float sampling_time_damper = 0.002; //Sampling time in seconds.
 LowPassFilter damperFilter[FFB_AXIS_COUNT];
 LowPassFilter inertiaFilter[FFB_AXIS_COUNT];
 LowPassFilter frictionFilter[FFB_AXIS_COUNT];
-
-#ifdef damperSplineGain
-damperSplineGain;
-#endif
 
 
 Joystick_::Joystick_(
@@ -497,7 +490,6 @@ int16_t Joystick_::getEffectForce(volatile TEffectState& effect, EffectParams _e
     {
         angle_ratio = getAngleRatio(effect, axis);
     }
-
 	int16_t force = 0;
 	switch (effect.effectType)
     {
@@ -527,13 +519,7 @@ int16_t Joystick_::getEffectForce(volatile TEffectState& effect, EffectParams _e
 	    	break;
 	    case USB_EFFECT_DAMPER://9
 	    	force = ConditionForceCalculator(effect, NormalizeRange(_effect_params.damperVelocity, m_effect_params[axis].damperMaxVelocity), condition) * angle_ratio;
-            //#ifdef damperSplineGain
-            //force *= (
-            //    Interpolation::CatmullSpline(damperSplinePoints[0], damperSplinePoints[1], damperSplineNumPoints, abs(force))
-            //    /10000.0);
-            //#else
 	    	force = force * (float)(m_gains[axis].damperGain/100.0f);
-            //#endif
             force = damperFilter[axis].update(force);
 	    	break;
 	    case USB_EFFECT_INERTIA://10
@@ -549,10 +535,15 @@ int16_t Joystick_::getEffectForce(volatile TEffectState& effect, EffectParams _e
 	    	force = ConditionForceCalculator(effect, NormalizeRange(_effect_params.frictionPositionChange, m_effect_params[axis].frictionMaxPositionChange), condition) * angle_ratio * (float)(m_gains[axis].frictionGain/100.0f);
             force = frictionFilter[axis].update(force);
 	    	break;
-	    case USB_EFFECT_CUSTOM://12
-	    	break;
 	    }
 
+		if (_serialPrintForces){
+		  Serial.print(axis);
+		  Serial.print(effect.effectType);
+		  Serial.print(":");
+		  Serial.print(force);				
+		  Serial.print(",");
+		}
 		return force;
 }
 
@@ -560,17 +551,28 @@ void Joystick_::forceCalculator(int16_t* forces) {
     forces[0] = 0;
     forces[1] = 0;
 
+	if (_serialPrintForces){
+	  Serial.print("!");
+	  Serial.print(SERIAL_CMD_DEBUG_FORCE_VALUES);
+	  Serial.print("|");
+	}
+		
     // If the device is in default auto spring effect lets calculate it
     if (DynamicHID().pidReportHandler.deviceState == MDEVICESTATE_SPRING)
     {
         for (int axis = 0; axis < FFB_AXIS_COUNT; ++axis)
         {
 	    	forces[axis] = (int16_t)(NormalizeRange(m_effect_params[axis].springPosition, m_effect_params[axis].springMaxPosition) * -10000 * (float)(m_gains[axis].defaultSpringGain/100.0f)); // TODO
-        }
-    }
+			if (_serialPrintForces){
+				Serial.print(axis);
+				Serial.print("99:");
+				Serial.print(forces[axis]);
+				Serial.print(",");
+			} //_serialPrintForces
+        } // axis
+    } // MDEVICESTATE_SPRING
     else
     {
-
 	    for (int id = 0; id < MAX_EFFECTS; id++) {
 	    	volatile TEffectState& effect = DynamicHID().pidReportHandler.g_EffectStates[id];
 
@@ -610,24 +612,17 @@ void Joystick_::forceCalculator(int16_t* forces) {
                 {
                     if (effect.enableAxis == DIRECTION_ENABLE
                         || effect.enableAxis & (1 << axis))
-                    {
+                    {	
                         forces[axis] += (int16_t)(getEffectForce(effect, effect.conditionReportsCount == 1 ? direction_effect_params : m_effect_params[axis], axis));
                     }
                 }
             }
-
-            //if (effect.state == MEFFECTSTATE_PLAYING)
-            //{
-            //    Serial.print("eT");
-            //    Serial.print(effect.elapsedTime);
-            //    Serial.print("sD");
-            //    Serial.print(effect.startDelay);
-            //    Serial.print("d");
-            //    Serial.print(effect.duration);
-            //    Serial.print("tD");
-            //    Serial.println(effect.totalDuration);
-            //}
 	    }
+		
+		if (_serialPrintForces){
+		  Serial.println("");
+		}
+
     }
 
     for (int axis = 0; axis < FFB_AXIS_COUNT; ++axis)

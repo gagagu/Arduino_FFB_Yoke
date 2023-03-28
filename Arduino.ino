@@ -235,33 +235,28 @@ void CheckCalibrationMode() {
       ReadMux();
 
       // if pitch down end switch is reached save value
-      if ((iSensorPinStates & (1 << ADJ_ENDSWITCH_PITCH_DOWN)) == LOW) {
+      if (((iSensorPinStates & (1 << ADJ_ENDSWITCH_PITCH_DOWN)) == LOW) && poti_pitch_min==-32768) {
         poti_pitch_min = counterPitch.read();
+        LcdPrintCalibrationAxesUpdate(poti_roll_min, poti_roll_max, poti_pitch_max, poti_pitch_min);
       }
 
       // if pitch up end switch is reached save value
-      if ((iSensorPinStates & (1 << ADJ_ENDSWITCH_PITCH_UP)) == LOW) {
+      if (((iSensorPinStates & (1 << ADJ_ENDSWITCH_PITCH_UP)) == LOW)&& poti_pitch_max==-32768) {
         poti_pitch_max = counterPitch.read();
+        LcdPrintCalibrationAxesUpdate(poti_roll_min, poti_roll_max, poti_pitch_max, poti_pitch_min);
       }
 
       // if roll left end switch is reached save value
-      if ((iSensorPinStates & (1 << ADJ_ENDSWITCH_ROLL_LEFT)) == LOW) {  //ir sensor
+      if (((iSensorPinStates & (1 << ADJ_ENDSWITCH_ROLL_LEFT)) == LOW)&& poti_roll_min==-32768) {  //ir sensor
         //Serial.println("left");
         poti_roll_min = counterRoll.read();
+        LcdPrintCalibrationAxesUpdate(poti_roll_min, poti_roll_max, poti_pitch_max, poti_pitch_min);
       }
 
       // if roll right end switch is reached save value
-      if ((iSensorPinStates & (1 << ADJ_ENDSWITCH_ROLL_RIGHT)) == LOW) {   // ir sensor
+      if (((iSensorPinStates & (1 << ADJ_ENDSWITCH_ROLL_RIGHT)) == LOW)&& poti_roll_max==-32768) {   // ir sensor
         //Serial.println("right");
         poti_roll_max = counterRoll.read();
-      }
-
-      // Update display on every endswitch change state
-      if ((iSensorPinStates & (1 << ADJ_ENDSWITCH_PITCH_DOWN)) == LOW
-          || (iSensorPinStates & (1 << ADJ_ENDSWITCH_PITCH_UP)) == LOW
-          || (iSensorPinStates & (1 << ADJ_ENDSWITCH_ROLL_LEFT)) == LOW
-          || (iSensorPinStates & (1 << ADJ_ENDSWITCH_ROLL_RIGHT)) == LOW
-         ) {
         LcdPrintCalibrationAxesUpdate(poti_roll_min, poti_roll_max, poti_pitch_max, poti_pitch_min);
       }
     } // while
