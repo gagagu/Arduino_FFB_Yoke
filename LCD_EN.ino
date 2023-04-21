@@ -1,4 +1,4 @@
- #if defined(languageEN) // language englisch
+ #if defined(LANGUAGE_EN) // language englisch
 
 /******************************************
   Into
@@ -45,16 +45,30 @@ void LCDPrintDebugMode(){
   lcd.setCursor(0, 0);
   lcd.print(F("Debug Mode: On"));
 }
-/******************************************
-  show calibration middle
-*******************************************/
-void LcdPrintCalibrationMiddle(){
-  lcd.setCursor(0, 0);
-  lcd.print(F("Put all axes in the "));
-  lcd.print(F("middle position and "));
-  lcd.print(F("press the calibratib"));
-  lcd.print(F("ration button       "));
-}
+
+#if defined(LANGUAGE_EN)
+  /******************************************
+    show calibration middle
+  *******************************************/
+  void LcdPrintCalibrationMiddleSensors(){
+    lcd.setCursor(0, 0);
+    lcd.print(F("Put all axes from   "));
+    lcd.print(F("one end to the other"));
+    lcd.print(F("to detect the middle"));
+    lcd.print(F("by sensor           "));
+  }
+#else
+  /******************************************
+    show calibration middle
+  *******************************************/
+  void LcdPrintCalibrationMiddle(){
+    lcd.setCursor(0, 0);
+    lcd.print(F("Put all axes in the "));
+    lcd.print(F("middle position and "));
+    lcd.print(F("press the calibratib"));
+    lcd.print(F("ration button       "));
+  }
+#endif
 
 /******************************************
   show calibration start

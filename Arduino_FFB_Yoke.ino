@@ -1,7 +1,9 @@
 
 // Version 1.3.0
 
-#define languageEN          // Special thank to Lollo for the inspiration and code
+#define LANGUAGE_EN         // Special thank to Lollo for the inspiration and code
+#define USE_CENTER_SENSOR   // comment out when not using center sensor
+
 #define SERIAL_BAUD 115200  // Communication Speed
 
 
@@ -85,8 +87,8 @@ void setup() {
 void loop() {
   currentMillis = millis();                                           // number of milliseconds passed since the Arduino board began running the current program
     
+  ReadMux();                                                          // Read values of buttons and end switch sensors (except yoke axes)
   if (currentMillis >= nextJoystickMillis) {                          // do not run more frequently than these many milliseconds, the window system needs time to process
-    ReadMux();                                                        // Read values of buttons and end switch sensors (except yoke axes)
     CheckCalibrationMode();                                           // check if calibration button was pressed an do it
     UpdateJoystickButtons();                                          // set Joystick buttons
     Joystick.sendState();                                             // send joystick values to system

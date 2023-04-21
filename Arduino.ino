@@ -29,6 +29,13 @@
 #define ADJ_ENDSWITCH_ROLL_RIGHT 3
 #define ADJ_BUTTON_CALIBRATION 4
 
+// If you use center sensor use 
+// RES_1 connector for Roll Roll Sensor
+// RES_2 connector for Pitch Sensor
+#if defined(LANGUAGE_EN)
+  #define ADJ_MIDDLESWITCH_ROLL 5
+  #define ADJ_MIDDLESWITCH_PITCH 6
+#endif
 
 // variables for Speed calculation
 byte roll_speed = 0;
@@ -209,6 +216,31 @@ void CheckCalibrationMode() {
 
     // dsiable motor
     DisableMotors();
+
+#if defined(LANGUAGE_EN)
+    // Print message to display for center position
+    LcdPrintCalibrationMiddleSensors();
+    
+    // measure center by ir sensors
+    byte byteFlag=0;
+    while(byteFlag!= B00000011)
+    {
+      delay(1);
+      ReadMux();
+      
+      // If Center Roll Sensor detects reset Roll counter
+      if((iSensorPinStates & (1 << ADJ_MIDDLESWITCH_ROLL))==0){
+        counterRoll.readAndReset(); 
+        byteFlag=byteFlag | B00000001;
+      }
+    
+      // If Center Pitch Sensor detects reset Roll counter
+      if((iSensorPinStates & (1 << ADJ_MIDDLESWITCH_PITCH))==0){
+        counterPitch.readAndReset(); 
+        byteFlag=byteFlag | B00000010;
+      }
+    }
+#else
     // Print message to display for center position
     LcdPrintCalibrationMiddle();
 
@@ -217,10 +249,11 @@ void CheckCalibrationMode() {
       delay(1);
       ReadMux();
     }
-
     // reset counters to zero
     counterRoll.readAndReset();
     counterPitch.readAndReset();
+#endif    
+
 
     // small wait; not really needed but nicer in behavior
     delay(500);
@@ -377,6 +410,18 @@ void ReadMux() {
 
   }//for
 
+// only for censter sensors
+#if defined(LANGUAGE_EN)
+  // If Center Roll Sensor detects reset Roll counter
+  if((iSensorPinStates & (1 << ADJ_MIDDLESWITCH_ROLL))==0){
+    counterRoll.readAndReset(); 
+  }
+
+  // If Center Pitch Sensor detects reset Roll counter
+  if((iSensorPinStates & (1 << ADJ_MIDDLESWITCH_PITCH))==0){
+    counterPitch.readAndReset(); 
+  }
+#endif  
 }// ReadMux
 
 /******************************************
