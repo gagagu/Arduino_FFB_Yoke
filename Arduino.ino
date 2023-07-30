@@ -298,23 +298,14 @@ void CheckCalibrationMode() {
     // this uses the absolute values
     // e.g. (-201) and (+200) means 201 for max valuev
     // e.g. (-198) and (+200) means 200 for max value
-    if (abs(poti_pitch_min) > abs(poti_pitch_max))
-    {
-      JOYSTICK_minY = abs(poti_pitch_min) * (-1);
-      JOYSTICK_maxY = abs(poti_pitch_min);
-    } else {
-      JOYSTICK_minY = abs(poti_pitch_max) * (-1);
-      JOYSTICK_maxY = abs(poti_pitch_max);
-    }
+    int absoluteMaxPitch = max(abs(poti_pitch_min), abs(poti_pitch_max));
+    JOYSTICK_minY = -absoluteMaxPitch;
+    JOYSTICK_maxY = absoluteMaxPitch;
 
-    if (abs(poti_roll_min) > abs(poti_roll_max))
-    {
-      JOYSTICK_minX = abs(poti_roll_min) * (-1);
-      JOYSTICK_maxX = abs(poti_roll_min);
-    } else {
-      JOYSTICK_minX = abs(poti_roll_max) * (-1);
-      JOYSTICK_maxX = abs(poti_roll_max);
-    }
+    int absoluteMaxRoll = max(abs(poti_roll_min), abs(poti_roll_max));
+    JOYSTICK_minX = -absoluteMaxRoll;
+    JOYSTICK_maxX = absoluteMaxRoll;
+
     // wait to give the user time so read the last value from display
     delay(3000);
 
