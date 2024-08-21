@@ -312,18 +312,19 @@ void DoAutomaticCalibration(){
   // **************************** Roll *********************************
   // move to smalest count direction
   MoveAxisToEndStop(counterRoll, ADJ_ENDSWITCH_ROLL_RIGHT, ROLL_L_PWM, ROLL_R_PWM);
+
   // reset counters to zero
   counterRoll.readAndReset();   
   // wait
   delay(300);
   // move to opposit direction till endswitch
   MoveAxisToEndStop(counterRoll, ADJ_ENDSWITCH_ROLL_LEFT, ROLL_R_PWM, ROLL_L_PWM);
+  JOYSTICK_maxX = counterRoll.read() / 2;
   // wait
   delay(300);
   // Move to center
-  MoveAxisToValue(counterRoll, ADJ_ENDSWITCH_ROLL_RIGHT, ROLL_L_PWM, ROLL_R_PWM, counterRoll.read()/2);
+  MoveAxisToValue(counterRoll, ADJ_ENDSWITCH_ROLL_RIGHT, ROLL_L_PWM, ROLL_R_PWM, JOYSTICK_maxX);
   // calculate min max
-  JOYSTICK_maxX = JOYSTICK_maxX / 2;
   JOYSTICK_minX = (-1) * JOYSTICK_maxX; 
 
   //******************* Pitch ****************************************
@@ -336,12 +337,13 @@ void DoAutomaticCalibration(){
   delay(300);
   // move to opposit direction till endswitch
   MoveAxisToEndStop(counterPitch, ADJ_ENDSWITCH_PITCH_DOWN, PITCH_L_PWM, PITCH_R_PWM);
+    JOYSTICK_maxY = counterPitch.read()/2;
   // wait  
   delay(300);
   // Move to center
-  MoveAxisToValue(counterPitch, ADJ_ENDSWITCH_PITCH_UP, PITCH_R_PWM, PITCH_L_PWM, counterPitch.read() / 2);
+  MoveAxisToValue(counterPitch, ADJ_ENDSWITCH_PITCH_UP, PITCH_R_PWM, PITCH_L_PWM, JOYSTICK_maxY);
   // calculate min max
-  JOYSTICK_maxY = JOYSTICK_maxY/2;
+
   JOYSTICK_minY = (-1) * JOYSTICK_maxY; 
   // set values
   SetRangeJoystick();
@@ -360,7 +362,6 @@ void MoveAxisToEndStop(Encoder &axisEncoder, byte endSwitchBit, byte motorPinOne
   int16_t oldPos =0;
   int16_t diffPos=0;
 
-
   oldPos = axisEncoder.read();
 
   while((iSensorPinStates & (1 << endSwitchBit))!=0)
@@ -371,6 +372,7 @@ void MoveAxisToEndStop(Encoder &axisEncoder, byte endSwitchBit, byte motorPinOne
     analogWrite(MotorPinTwo, speed);  // speed up right
   
     newPos = axisEncoder.read();
+
     diffPos =  abs(newPos - oldPos);
     if(diffPos < max_diff)
     {
@@ -411,9 +413,9 @@ void MoveAxisToValue(Encoder &axisEncoder, byte endSwitchBit, byte motorPinOne, 
 
 
   oldPos = axisEncoder.read();
-
-  while(axisEncoder.read() > countValue || ((iSensorPinStates & (1 << endSwitchBit))!=0))
+  while(axisEncoder.read() > countValue && ((iSensorPinStates & (1 << endSwitchBit))!=0))
   {
+   
     delay(wait_delay);                 
     ReadMux();    
     analogWrite(motorPinOne, 0);         
