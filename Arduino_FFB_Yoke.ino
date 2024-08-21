@@ -1,14 +1,9 @@
 
-// Version 1.3.0
-
-#define LANGUAGE_EN         // Special thank to Lollo for the inspiration and code
-#define USE_CENTER_SENSOR   // comment out when not using center sensor
+// Version 2.0.0
 
 #define SERIAL_BAUD 115200  // Communication Speed
 
-
 #include "src/Joystick.h"   // Joystick and FFB Library (many changes made) by https://github.com/jmriego/Fino
-#include <LiquidCrystal.h>  // https://www.arduino.cc/reference/en/libraries/liquidcrystal/
 #include <Encoder.h>        // Encoder Library https://github.com/PaulStoffregen/Encoder
 #include <EEPROM.h>         // https://docs.arduino.cc/learn/built-in-libraries/eeprom
 
@@ -39,7 +34,7 @@ unsigned long nextEffectsMillis=0;    // count millis for next Effect update
 unsigned long currentMillis;          // millis for the current loop
 
 bool blSerialDebug = false;           // serial debug mode
-bool blStart = true;                  // start flag
+bool blCalibration = true;                  // start flag
 byte bSerialIndex=0;
 
 int16_t forces[MEM_AXES] = {0, 0};      // stored forces
@@ -58,7 +53,6 @@ Joystick_ Joystick(                     // define Joystick parameters
   false, false, false,                  // Rx, Ry, Rz
   false, false);                        // rudder, throttle
 
-LiquidCrystal lcd(12, 7, A0, A1, A2, A3); // init library for lcd display
 Encoder counterRoll(0, 1);                // init encoder library for roll ir sensor
 Encoder counterPitch(3, 2);               // init encoder library for pitch ir sensor
 
@@ -68,43 +62,48 @@ Encoder counterPitch(3, 2);               // init encoder library for pitch ir s
 void setup() {
 
   ArduinoSetup();                   // setup for Arduino itself (pins)
-  setupJoystick();                  // Joystick setup
+  SetupJoystick();                  // Joystick setup
 
   Serial.begin(SERIAL_BAUD);        // init serial
 
-  lcd.begin(20 , 4);                // start lcd display
-  LcdPrintIntro();                  // show intro to lcd display
-  delay(3000);                      // wait
-  
-  LcdPrintAdjustmendValues();       // show adjusted parameters
- 
   EnableMotors();                   // enable motors
+
 } //setup
 
 /******************************
       main loop
 ****************************/
 void loop() {
+
+
   currentMillis = millis();                                           // number of milliseconds passed since the Arduino board began running the current program
-    
+
   ReadMux();                                                          // Read values of buttons and end switch sensors (except yoke axes)
-  if (currentMillis >= nextJoystickMillis) {                          // do not run more frequently than these many milliseconds, the window system needs time to process
-    CheckCalibrationMode();                                           // check if calibration button was pressed an do it
-    UpdateJoystickButtons();                                          // set Joystick buttons
-    Joystick.sendState();                                             // send joystick values to system
 
-    if (currentMillis >= nextEffectsMillis) {                         // we calculate condition forces every 100ms or more frequently if we get position updates
-      updateEffects(true);                                            // update/calculate new effect paraeters
-      nextEffectsMillis = currentMillis + 100;                        // set time for new effect loop
-    } else {
-      updateEffects(false);                                           // calculate forces without recalculating condition forces
-      // this helps having smoother spring/damper/friction
-      // if our update rate matches our input device
-    } //nextEffectsMillis  || pos_updated
+if(blCalibration)
+{
+  DoAutomaticCalibration();                  // Start with Calibration
+  blCalibration=false;
+}
+else
+{
+    if (currentMillis >= nextJoystickMillis) {                          // do not run more frequently than these many milliseconds, the window system needs time to process
+      UpdateJoystickButtons();                                          // set Joystick buttons
+      Joystick.sendState();                                             // send joystick values to system
 
-    DriveMotors();                                                     // move motors
-    nextJoystickMillis = currentMillis + 20;                           // set time for new joystick loop
+      if (currentMillis >= nextEffectsMillis) {                         // we calculate condition forces every 100ms or more frequently if we get position updates
+        UpdateEffects(true);                                            // update/calculate new effect paraeters
+        nextEffectsMillis = currentMillis + 100;                        // set time for new effect loop
+      } else {
+        UpdateEffects(false);                                           // calculate forces without recalculating condition forces
+        // this helps having smoother spring/damper/friction
+        // if our update rate matches our input device
+      } //nextEffectsMillis  || pos_updated
 
-    SerialEvent();                                                     // check if serial event received
-  } //nextJoystickMillis
+      PrepareMotors();                                                     // move motors
+      nextJoystickMillis = currentMillis + 20;                           // set time for new joystick loop
+
+      SerialEvent();                                                     // check if serial event received
+    } //nextJoystickMillis
+  }
 } // loop

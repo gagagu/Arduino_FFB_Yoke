@@ -27,15 +27,6 @@
 #define ADJ_ENDSWITCH_PITCH_UP 1
 #define ADJ_ENDSWITCH_ROLL_LEFT 2
 #define ADJ_ENDSWITCH_ROLL_RIGHT 3
-#define ADJ_BUTTON_CALIBRATION 4
-
-// If you use center sensor use 
-// RES_1 connector for Roll Roll Sensor
-// RES_2 connector for Pitch Sensor
-#if defined(LANGUAGE_EN)
-  #define ADJ_MIDDLESWITCH_ROLL 5
-  #define ADJ_MIDDLESWITCH_PITCH 6
-#endif
 
 // variables for Speed calculation
 byte roll_speed = 0;
@@ -125,11 +116,11 @@ void DisableMotors() {
 } //DisableMotors
 
 /******************************************************
-  calculates the motor speeds and controls the motors
+  Prepare motors for movement
 ******************************************************/
-void DriveMotors() {
-  // calculate motor speed for pitch direction
-  CalculateSpeed(pitch_speed,
+void PrepareMotors() {
+  // prepare motor for pitch direction
+  MoveMotorByForce(pitch_speed,
                  (iSensorPinStates & (1 << ADJ_ENDSWITCH_PITCH_DOWN)),
                  (iSensorPinStates & (1 << ADJ_ENDSWITCH_PITCH_UP)),
                  PITCH_R_PWM,
@@ -139,8 +130,8 @@ void DriveMotors() {
                  adjPwmMin[MEM_PITCH],
                  adjPwmMax[MEM_PITCH]);
 
-  // calculate motor speed for roll direction
-  CalculateSpeed(roll_speed,
+  // prepare motor for roll direction
+  MoveMotorByForce(roll_speed,
                  (iSensorPinStates & (1 << ADJ_ENDSWITCH_ROLL_LEFT)),
                  (iSensorPinStates & (1 << ADJ_ENDSWITCH_ROLL_RIGHT)),
                  ROLL_L_PWM,
@@ -149,12 +140,12 @@ void DriveMotors() {
                  adjForceMax[MEM_ROLL],
                  adjPwmMin[MEM_ROLL],
                  adjPwmMax[MEM_ROLL]);
-} //DriveMotors
+} //PrepareMotors
 
 /******************************************************
-  calculates the motor speeds
+  calculates the motor speeds and move
 ******************************************************/
-int CalculateSpeed(byte &rSpeed,
+void MoveMotorByForce(byte &rSpeed,
                    bool blEndswitchDown,
                    bool blEndswitchUp,
                    byte pinLPWM,
@@ -187,139 +178,7 @@ int CalculateSpeed(byte &rSpeed,
       analogWrite(pinRPWM, rSpeed);  // speed up right
     }
   }
-} //CalculateSpeed
-
-/******************************************************
-  Calibration
-******************************************************/
-void CheckCalibrationMode() {
-  // is calibration button pressed or system started
-  if ((iSensorPinStates & (1 << ADJ_BUTTON_CALIBRATION)) || blStart == true) {
-    // read again for debouncing button, not needed for start
-    if (blStart == false)
-    {
-      while (iSensorPinStates & (1 << ADJ_BUTTON_CALIBRATION)) {
-        delay(1);
-        ReadMux();
-      }
-    } else {
-      blStart = false;
-    }
-
-    // maximum and minimum counter values for roll
-    int poti_roll_min = -32768;                             //counter min for Init;
-    int poti_roll_max = -32768;                             //counter max for Init;
-
-    // maximum and minimum counter values for pitch
-    int poti_pitch_min = -32768;                             //counter min for Init;
-    int poti_pitch_max = -32768;                            //counter max for Init;
-
-    // dsiable motor
-    DisableMotors();
-
-#if defined(LANGUAGE_EN)
-    // Print message to display for center position
-    LcdPrintCalibrationMiddleSensors();
-    
-    // measure center by ir sensors
-    byte byteFlag=0;
-    while(byteFlag!= B00000011)
-    {
-      delay(1);
-      ReadMux();
-      
-      // If Center Roll Sensor detects reset Roll counter
-      if((iSensorPinStates & (1 << ADJ_MIDDLESWITCH_ROLL))==0){
-        counterRoll.readAndReset(); 
-        byteFlag=byteFlag | B00000001;
-      }
-    
-      // If Center Pitch Sensor detects reset Roll counter
-      if((iSensorPinStates & (1 << ADJ_MIDDLESWITCH_PITCH))==0){
-        counterPitch.readAndReset(); 
-        byteFlag=byteFlag | B00000010;
-      }
-    }
-#else
-    // Print message to display for center position
-    LcdPrintCalibrationMiddle();
-
-    // wait for button press to measure center
-    while ((iSensorPinStates & (1 << ADJ_BUTTON_CALIBRATION)) == LOW) {
-      delay(1);
-      ReadMux();
-    }
-    // reset counters to zero
-    counterRoll.readAndReset();
-    counterPitch.readAndReset();
-#endif    
-
-
-    // small wait; not really needed but nicer in behavior
-    delay(500);
-
-    // print message to display for moving to all axes end
-    LcdPrintCalibrationAxesStart();
-
-    // do until all axes are received
-    while (poti_roll_min == -32768 || poti_roll_max == -32768 || poti_pitch_min == -32768 || poti_pitch_max == -32768)
-    {
-      // read end switches to detect changes
-      ReadMux();
-
-      // if pitch down end switch is reached save value
-      if (((iSensorPinStates & (1 << ADJ_ENDSWITCH_PITCH_DOWN)) == LOW) && poti_pitch_min==-32768) {
-        poti_pitch_min = counterPitch.read();
-        LcdPrintCalibrationAxesUpdate(poti_roll_min, poti_roll_max, poti_pitch_max, poti_pitch_min);
-      }
-
-      // if pitch up end switch is reached save value
-      if (((iSensorPinStates & (1 << ADJ_ENDSWITCH_PITCH_UP)) == LOW)&& poti_pitch_max==-32768) {
-        poti_pitch_max = counterPitch.read();
-        LcdPrintCalibrationAxesUpdate(poti_roll_min, poti_roll_max, poti_pitch_max, poti_pitch_min);
-      }
-
-      // if roll left end switch is reached save value
-      if (((iSensorPinStates & (1 << ADJ_ENDSWITCH_ROLL_LEFT)) == LOW)&& poti_roll_min==-32768) {  //ir sensor
-        //Serial.println("left");
-        poti_roll_min = counterRoll.read();
-        LcdPrintCalibrationAxesUpdate(poti_roll_min, poti_roll_max, poti_pitch_max, poti_pitch_min);
-      }
-
-      // if roll right end switch is reached save value
-      if (((iSensorPinStates & (1 << ADJ_ENDSWITCH_ROLL_RIGHT)) == LOW)&& poti_roll_max==-32768) {   // ir sensor
-        //Serial.println("right");
-        poti_roll_max = counterRoll.read();
-        LcdPrintCalibrationAxesUpdate(poti_roll_min, poti_roll_max, poti_pitch_max, poti_pitch_min);
-      }
-    } // while
-
-    // calculate max values for Joystick axes
-    // this uses the absolute values
-    // e.g. (-201) and (+200) means 201 for max valuev
-    // e.g. (-198) and (+200) means 200 for max value
-    int absoluteMaxPitch = max(abs(poti_pitch_min), abs(poti_pitch_max));
-    JOYSTICK_minY = -absoluteMaxPitch;
-    JOYSTICK_maxY = absoluteMaxPitch;
-
-    int absoluteMaxRoll = max(abs(poti_roll_min), abs(poti_roll_max));
-    JOYSTICK_minX = -absoluteMaxRoll;
-    JOYSTICK_maxX = absoluteMaxRoll;
-
-    // wait to give the user time so read the last value from display
-    delay(3000);
-
-    // set the new Joystick range
-    setRangeJoystick();
-
-    // enable motors
-    EnableMotors();
-
-    // show adjustment values again
-    LcdPrintAdjustmendValues();
-
-  } // button not pressed
-} // CheckCalibrationMode
+} //MoveMotor
 
 /******************************************
    Reads the button states over multiplexer
@@ -400,19 +259,6 @@ void ReadMux() {
     PORTD = PORTD | B00010000; // Digital Pin 4 - PortD4
 
   }//for
-
-// only for censter sensors
-#if defined(LANGUAGE_EN)
-  // If Center Roll Sensor detects reset Roll counter
-  if((iSensorPinStates & (1 << ADJ_MIDDLESWITCH_ROLL))==0){
-    counterRoll.readAndReset(); 
-  }
-
-  // If Center Pitch Sensor detects reset Roll counter
-  if((iSensorPinStates & (1 << ADJ_MIDDLESWITCH_PITCH))==0){
-    counterPitch.readAndReset(); 
-  }
-#endif  
 }// ReadMux
 
 /******************************************
@@ -453,3 +299,150 @@ void UpdateJoystickButtons() {
     Joystick.setButton(channel - 4, (iYokeButtonPinStates & (1 << channel)) >> channel);
   }
 } //updateJoystickButtons
+
+/******************************************
+  Automatic calibration routine
+*******************************************/
+void DoAutomaticCalibration(){
+  JOYSTICK_minX = 0;
+  JOYSTICK_maxX = 0;
+  JOYSTICK_minY = 0;
+  JOYSTICK_maxY = 0;
+  
+  // **************************** Roll *********************************
+  // move to smalest count direction
+  MoveAxisToEndStop(counterRoll, ADJ_ENDSWITCH_ROLL_RIGHT, ROLL_L_PWM, ROLL_R_PWM);
+  // reset counters to zero
+  counterRoll.readAndReset();   
+  // wait
+  delay(300);
+  // move to opposit direction till endswitch
+  MoveAxisToEndStop(counterRoll, ADJ_ENDSWITCH_ROLL_LEFT, ROLL_R_PWM, ROLL_L_PWM);
+  // wait
+  delay(300);
+  // Move to center
+  MoveAxisToValue(counterRoll, ADJ_ENDSWITCH_ROLL_RIGHT, ROLL_L_PWM, ROLL_R_PWM, counterRoll.read()/2);
+  // calculate min max
+  JOYSTICK_maxX = JOYSTICK_maxX / 2;
+  JOYSTICK_minX = (-1) * JOYSTICK_maxX; 
+
+  //******************* Pitch ****************************************
+  delay(300);
+  // move to smalest count direction
+  MoveAxisToEndStop(counterPitch, ADJ_ENDSWITCH_PITCH_UP, PITCH_R_PWM, PITCH_L_PWM);
+  // reset counters to zero
+  counterPitch.readAndReset();  
+  // waitS 
+  delay(300);
+  // move to opposit direction till endswitch
+  MoveAxisToEndStop(counterPitch, ADJ_ENDSWITCH_PITCH_DOWN, PITCH_L_PWM, PITCH_R_PWM);
+  // wait  
+  delay(300);
+  // Move to center
+  MoveAxisToValue(counterPitch, ADJ_ENDSWITCH_PITCH_UP, PITCH_R_PWM, PITCH_L_PWM, counterPitch.read() / 2);
+  // calculate min max
+  JOYSTICK_maxY = JOYSTICK_maxY/2;
+  JOYSTICK_minY = (-1) * JOYSTICK_maxY; 
+  // set values
+  SetRangeJoystick();
+}
+
+/***************************************************************************************
+          Moves axis to end stop position
+***************************************************************************************/
+void MoveAxisToEndStop(Encoder &axisEncoder, byte endSwitchBit, byte motorPinOne, byte MotorPinTwo){
+  byte max_diff =  15;
+  byte speed = 1;
+  byte max_speed=200;
+  int wait_delay=5;
+
+  int16_t newPos =0;
+  int16_t oldPos =0;
+  int16_t diffPos=0;
+
+
+  oldPos = axisEncoder.read();
+
+  while((iSensorPinStates & (1 << endSwitchBit))!=0)
+  {
+    delay(wait_delay);                 
+    ReadMux();    
+    analogWrite(motorPinOne, 0);          // stop left
+    analogWrite(MotorPinTwo, speed);  // speed up right
+  
+    newPos = axisEncoder.read();
+    diffPos =  abs(newPos - oldPos);
+    if(diffPos < max_diff)
+    {
+        speed++;
+        if (speed>max_speed)
+        {
+          speed=max_speed;
+        }
+    }
+    else if (diffPos > max_diff)
+    {
+      speed--;
+      if(speed<0)
+      {
+        speed=0;
+      }
+    }
+
+    oldPos = newPos;
+  }
+
+  analogWrite(motorPinOne, 0);  // stop left
+  analogWrite(MotorPinTwo, 0);  // stop right
+} //MoveAxisToEndStop
+
+/***************************************************************************************
+          Moves axis to specified counter position position
+***************************************************************************************/
+void MoveAxisToValue(Encoder &axisEncoder, byte endSwitchBit, byte motorPinOne, byte MotorPinTwo, int32_t countValue){
+  byte max_diff =  15;
+  byte speed = 1;
+  byte max_speed=200;
+  int wait_delay=5;
+
+  int16_t newPos =0;
+  int16_t oldPos =0;
+  int16_t diffPos=0;
+
+
+  oldPos = axisEncoder.read();
+
+  while(axisEncoder.read() > countValue || ((iSensorPinStates & (1 << endSwitchBit))!=0))
+  {
+    delay(wait_delay);                 
+    ReadMux();    
+    analogWrite(motorPinOne, 0);         
+    analogWrite(MotorPinTwo, speed);  
+  
+    newPos = axisEncoder.read();
+    diffPos =  abs(newPos - oldPos);
+    if(diffPos < max_diff)
+    {
+        speed++;
+        if (speed>max_speed)
+        {
+          speed=max_speed;
+        }
+    }
+    else if (diffPos > max_diff)
+    {
+      speed--;
+      if(speed<0)
+      {
+        speed=0;
+      }
+    }
+
+    oldPos = newPos;
+  }  
+  
+  analogWrite(motorPinOne, 0);  // stop 
+  analogWrite(MotorPinTwo, 0);  // stop 
+
+  axisEncoder.readAndReset();   
+}

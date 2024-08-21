@@ -30,21 +30,21 @@ int16_t lastAccelY;                     // Acceleration X value from last loop
 /******************************************
   setup joystick and initialisation
 *******************************************/
-void setupJoystick() {
+void SetupJoystick() {
   if(IsEepromDataAvailable()==1)
   {
     ReadDataFromEeprom();
   }else{
-    setupDefaults();
+    SetupDefaults();
   }
 
-  setGains();                           // set gains
-  setRangeJoystick();                   // set range
+  SetGains();                           // set gains
+  SetRangeJoystick();                   // set range
   Joystick.begin(false);                // start joystick emulation (no auto send updates);
 }
 
 // default values
-void setupDefaults(){
+void SetupDefaults(){
   gains[MEM_ROLL].totalGain = default_gain;
   gains[MEM_ROLL].constantGain = default_gain;
   gains[MEM_ROLL].rampGain = default_gain;
@@ -88,16 +88,21 @@ void setupDefaults(){
   adjPwmMax[MEM_PITCH]=default_PITCH_PWM_MAX;
 }
 
-void setRangeJoystick() {
+void SetRangeJoystick() {
+    Serial.println("set range");
+    Serial.println(JOYSTICK_minX);
+    Serial.println(JOYSTICK_maxX);
+    Serial.println(JOYSTICK_minY);
+    Serial.println(JOYSTICK_maxY);
   Joystick.setXAxisRange(JOYSTICK_minX, JOYSTICK_maxX);
   Joystick.setYAxisRange(JOYSTICK_minY, JOYSTICK_maxY);
 }
 
-void setGains() {
+void SetGains() {
   Joystick.setGains(gains);
 }
 
-void updateEffects(bool recalculate) {
+void UpdateEffects(bool recalculate) {
   //If you need to use the spring effect, set the following parameters.`Position` is the current position of the force feedback axis.
   //For example, connect the encoder with the action axis,the current encoder value is `Positon` and the max encoder value is `MaxPosition`.
   effects[MEM_ROLL].springMaxPosition = JOYSTICK_maxX;

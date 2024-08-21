@@ -118,7 +118,6 @@ void SerialProcessReadCommand(int16_t cmd, int16_t val) {
   switch (cmd) {
     case SERIAL_CMD_DEBUG_START:                    // start debug mode
       blSerialDebug = true;                         // set flag
-      LCDPrintDebugMode();                          // set display info
       SerialWriteStart(SERIAL_CMD_READ_ALL_VALUES); // return info to sender
       SerialWriteEnd();                             // end flag
       break;
@@ -126,7 +125,6 @@ void SerialProcessReadCommand(int16_t cmd, int16_t val) {
       blSerialDebug = false;                        // reset flag
       SerialWriteStart(SERIAL_CMD_DEBUG_STOP);      // return info to sender
       SerialWriteEnd();                             // end flag
-      LcdPrintAdjustmendValues();                   // reset display info
       break;
     case SERIAL_CMD_READ_ALL_VALUES:                // return all measured values like speed, counter,...
       SerialWriteStart(SERIAL_CMD_READ_ALL_VALUES); // return info to sender
@@ -273,12 +271,11 @@ void SerialProcessWriteCommand(int16_t cmd, int16_t value) {
   }
 
   
-  setGains();                // set gains for joystick
+  SetGains();                // set gains for joystick
   
   SerialWriteStart(cmd);     // return info to sender
   SerialWriteEnd();          // End flag
   
-  LcdPrintAdjustmendValues(); // update LCD display
 } //SerialProcessWriteCommand
 
 
