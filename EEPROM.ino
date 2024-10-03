@@ -1,8 +1,3 @@
-
-#define EEPROM_DATA_AVAILABLE_INDEX 0     // eeprom address to indicate data available
-                                          // space between reserved
-#define EEPROM_DATA_INDEX 10              // eeprom start address for data
-
 /******************************************
   clear all data in eeprom
 *******************************************/
