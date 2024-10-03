@@ -8,9 +8,11 @@ If you want to use it in an commercial way please contact me.
 
 ## New Hardware version available version 2.0
 JR4 has created a new hardware for this project (many thanks) and the new parts are available [here](https://www.thingiverse.com/thing:6464701)
+
 My remixes for this new hardware are available [here](https://www.thingiverse.com/thing:6786283)
 
 For the new Code with automatic calibration switch the branch to "2.0" but be careful, it's in alpha state and I am not responsible for any damage to man and machine. Be careful when handling electronics and mechanics.
+
 The hardware is nearly the same as shown in 1.3.5 with small changes. The new Software is beeing in development, switch branch to v2.0 to see alpha version (if not visible yet than updated soon) and see Wiki for updated Schematic.
 
 ### This project is still in development and will be extend constantly.
