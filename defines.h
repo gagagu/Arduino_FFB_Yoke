@@ -1,4 +1,11 @@
+#ifndef DEFINES_H
+#define DEFINES_H
+
 #define SERIAL_BAUD 115200  // Communication Speed
+
+#define SERIAL_DEBUG 1
+
+#define BUZZER_PIN 12
 
 /*****************************
   Memory array positions for Effects
@@ -9,8 +16,8 @@
 
 // Pitch Motordriver pins
 #define PITCH_EN 11
-#define PITCH_R_PWM 6
-#define PITCH_L_PWM 13
+#define PITCH_U_PWM 6
+#define PITCH_D_PWM 13
 
 // Roll Motordriver pins
 #define ROLL_EN 8
@@ -37,6 +44,7 @@
 #define ADJ_ENDSWITCH_ROLL_LEFT 2
 #define ADJ_ENDSWITCH_ROLL_RIGHT 3
 #define ADJ_CALIBRATION_BUTTON 4
+#define ADJ_MOTOR_POWER 5
 
 
 /******************************************
@@ -126,3 +134,26 @@
 #define default_ROLL_FORCE_MAX 10000;
 #define default_ROLL_PWM_MAX 150;
 #define default_ROLL_PWM_MIN 40;
+
+
+/******************************************
+   Calibration Constants
+*******************************************/
+  #define  CALIBRATION_MAX_SPEED 75;                        // Maximum speed
+  #define CALIBRATION_AXIS_MOVEMENT_TIMEOUT 4000;           // Timeout of 4 seconds for no movement
+  #define CALIBRATION_TIMEOUT 20000;                        // Timeout of 20 seconds for calibration
+  #define CALIBRATION_SPEED_INCREMENT 5;                   // the speed is increased until asix movement, this is added to speed then move´ment indicates 
+  #define CALIBRATION_WHILE_DELAY 20;                        // waitdelay inside while of movement to give Arduino time. Change will change speed!
+  #define CALIBRATION_WHILE_DELAY_MOTOR_STOPS 30;           // waitdelay when motor stops to give him time to stops
+  #define CALIBRATION_DELAY_MOVE_OUT_OF_ENDSTOP 100;        // If asix is on endstop on start od´f calibration it will move out of and wait shot before continue
+
+/******************************************
+   Beep
+*******************************************/
+#define BEEP_SHORT_TONE 200
+#define BEEP_LONG_TONE 600
+#define BEEP_CODE_FREQUENCY 1000
+#define BEEP_CODE_DELAY 1000
+#define BEEP_CODE_COUNT 3 //start with 0
+
+#endif

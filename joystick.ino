@@ -1,5 +1,4 @@
 
-
 /******************************************
   setup joystick and initialisation
 *******************************************/
@@ -62,8 +61,8 @@ void SetupDefaults(){
 }
 
 void SetRangeJoystick() {
-  Joystick.setXAxisRange(ROLL_AxisConfiguration.iMin, ROLL_AxisConfiguration.iMax);
-  Joystick.setYAxisRange(PITCH_AxisConfiguration.iMin, PITCH_AxisConfiguration.iMax);
+  Joystick.setXAxisRange(rollConfig.iMin, rollConfig.iMax);
+  Joystick.setYAxisRange(pitchConfig.iMin, pitchConfig.iMax);
 }
 
 void SetGains() {
@@ -73,11 +72,14 @@ void SetGains() {
 void UpdateEffects(bool recalculate) {
   //If you need to use the spring effect, set the following parameters.`Position` is the current position of the force feedback axis.
   //For example, connect the encoder with the action axis,the current encoder value is `Positon` and the max encoder value is `MaxPosition`.
-  effects[MEM_ROLL].springMaxPosition = ROLL_AxisConfiguration.iMax;
-  effects[MEM_PITCH].springMaxPosition = PITCH_AxisConfiguration.iMax;
+  effects[MEM_ROLL].springMaxPosition = rollConfig.iMax;
+  effects[MEM_PITCH].springMaxPosition = pitchConfig.iMax;
 
   effects[MEM_ROLL].springPosition = counterRoll.read();
   effects[MEM_PITCH].springPosition = counterPitch.read();
+
+
+  
 
   unsigned long currentMillis = millis();
   int16_t diffTime = currentMillis - lastEffectsUpdate;
@@ -119,21 +121,12 @@ void UpdateEffects(bool recalculate) {
     effects[MEM_PITCH].damperVelocity = lastVelY;
   }
 
-  if(ROLL_AxisConfiguration.blAxisInverted)
-  {
-    Joystick.setXAxis(counterRoll.read() * (-1));
 
-  }else{
-    Joystick.setXAxis(counterRoll.read());
-  }
+  Joystick.setXAxis(-counterRoll.read());
+  Joystick.setYAxis(counterPitch.read());
 
-  if(PITCH_AxisConfiguration.blAxisInverted)
-  {
-    Joystick.setYAxis(counterPitch.read() * (-1));
-  }else{
-    Joystick.setYAxis(counterPitch.read());
-  }
 
   Joystick.setEffectParams(effects);
+
   Joystick.getForce(forces);
 }
