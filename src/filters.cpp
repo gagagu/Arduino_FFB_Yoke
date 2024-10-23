@@ -3,7 +3,7 @@
 
 #define PI 3.1415926535897932384626433832795
 
-LowPassFilter::LowPassFilter():
+LowPassFilter::LowPassFilter(): 
 	output(0),
 	ePow(0){}
 

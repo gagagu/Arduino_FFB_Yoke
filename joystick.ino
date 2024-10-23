@@ -1,31 +1,4 @@
-// Default vaules for gains and effect if nothing saved into eeprom
-#define default_gain 100
-#define default_friction_gain 25
 
-#define default_frictionMaxPositionChange_ROLL 125;
-#define default_inertiaMaxAcceleration_ROLL 100;
-#define default_damperMaxVelocity_ROLL 350;
-
-#define default_frictionMaxPositionChange_PITCH 125;
-#define default_inertiaMaxAcceleration_PITCH 100;
-#define default_damperMaxVelocity_PITCH 350;
-
-#define default_PITCH_FORCE_MAX 10000;
-#define default_PITCH_PWM_MAX 150;
-#define default_PITCH_PWM_MIN 40;
-
-#define default_ROLL_FORCE_MAX 10000;
-#define default_ROLL_PWM_MAX 150;
-#define default_ROLL_PWM_MIN 40;
-
-// variables for calculation
-unsigned long lastEffectsUpdate = 0;    // count millis for next effect calculation
-int16_t lastX;                          // X value from last loop
-int16_t lastY;                          // Y value from last loop
-int16_t lastVelX;                       // Velocity X value from last loop
-int16_t lastVelY;                       // Velocity y value from last loop
-int16_t lastAccelX;                     // Acceleration X value from last loop
-int16_t lastAccelY;                     // Acceleration X value from last loop
 
 /******************************************
   setup joystick and initialisation
@@ -89,13 +62,8 @@ void SetupDefaults(){
 }
 
 void SetRangeJoystick() {
-    Serial.println("set range");
-    Serial.println(JOYSTICK_minX);
-    Serial.println(JOYSTICK_maxX);
-    Serial.println(JOYSTICK_minY);
-    Serial.println(JOYSTICK_maxY);
-  Joystick.setXAxisRange(JOYSTICK_minX, JOYSTICK_maxX);
-  Joystick.setYAxisRange(JOYSTICK_minY, JOYSTICK_maxY);
+  Joystick.setXAxisRange(ROLL_AxisConfiguration.iMin, ROLL_AxisConfiguration.iMax);
+  Joystick.setYAxisRange(PITCH_AxisConfiguration.iMin, PITCH_AxisConfiguration.iMax);
 }
 
 void SetGains() {
@@ -105,8 +73,8 @@ void SetGains() {
 void UpdateEffects(bool recalculate) {
   //If you need to use the spring effect, set the following parameters.`Position` is the current position of the force feedback axis.
   //For example, connect the encoder with the action axis,the current encoder value is `Positon` and the max encoder value is `MaxPosition`.
-  effects[MEM_ROLL].springMaxPosition = JOYSTICK_maxX;
-  effects[MEM_PITCH].springMaxPosition = JOYSTICK_maxY;
+  effects[MEM_ROLL].springMaxPosition = ROLL_AxisConfiguration.iMax;
+  effects[MEM_PITCH].springMaxPosition = PITCH_AxisConfiguration.iMax;
 
   effects[MEM_ROLL].springPosition = counterRoll.read();
   effects[MEM_PITCH].springPosition = counterPitch.read();
@@ -151,9 +119,21 @@ void UpdateEffects(bool recalculate) {
     effects[MEM_PITCH].damperVelocity = lastVelY;
   }
 
-  Joystick.setXAxis(counterRoll.read());
-  Joystick.setYAxis(counterPitch.read());
-  Joystick.setEffectParams(effects);
+  if(ROLL_AxisConfiguration.blAxisInverted)
+  {
+    Joystick.setXAxis(counterRoll.read() * (-1));
 
+  }else{
+    Joystick.setXAxis(counterRoll.read());
+  }
+
+  if(PITCH_AxisConfiguration.blAxisInverted)
+  {
+    Joystick.setYAxis(counterPitch.read() * (-1));
+  }else{
+    Joystick.setYAxis(counterPitch.read());
+  }
+
+  Joystick.setEffectParams(effects);
   Joystick.getForce(forces);
 }
