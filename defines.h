@@ -139,10 +139,10 @@
 /******************************************
    Calibration Constants
 *******************************************/
-  #define  CALIBRATION_MAX_SPEED 75;                        // Maximum speed
+  #define  CALIBRATION_MAX_SPEED 80;                        // Maximum speed
   #define CALIBRATION_AXIS_MOVEMENT_TIMEOUT 4000;           // Timeout of 4 seconds for no movement
   #define CALIBRATION_TIMEOUT 20000;                        // Timeout of 20 seconds for calibration
-  #define CALIBRATION_SPEED_INCREMENT 5;                   // the speed is increased until asix movement, this is added to speed then move´ment indicates 
+  #define CALIBRATION_SPEED_INCREMENT 10;                   // the speed is increased until asix movement, this is added to speed then move´ment indicates 
   #define CALIBRATION_WHILE_DELAY 20;                        // waitdelay inside while of movement to give Arduino time. Change will change speed!
   #define CALIBRATION_WHILE_DELAY_MOTOR_STOPS 30;           // waitdelay when motor stops to give him time to stops
   #define CALIBRATION_DELAY_MOVE_OUT_OF_ENDSTOP 100;        // If asix is on endstop on start od´f calibration it will move out of and wait shot before continue

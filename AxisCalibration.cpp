@@ -29,7 +29,7 @@ void Axis::ManageMovement( bool direction, unsigned long& lastMovementTime, int&
     int currentEncoderValue = encoder->read();
 
     // Check for speed increase
-    if (abs(currentEncoderValue - lastEncoderValue)<=10) {
+    if (abs(currentEncoderValue - lastEncoderValue)<=20) {
         if (speed < maxSpeed) speed++;  // Increment speed by 1
     } else {
         lastMovementTime = millis();
@@ -169,7 +169,7 @@ void Axis::Calibrate() {
     speed=1;
     lastMovementTime = millis();
     lastEncoderValue = ResetEncoder();
-    speedIncreased = true;  // Reset for next loop
+    speedIncreased = false;  // Reset for next loop
 
     while (!blEndSwitchLeft) {
         // Serial.print(", direction:");
