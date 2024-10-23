@@ -1,251 +1,245 @@
 #include "PIDReportHandler.h"
 
+// Constructor: Initializes the PIDReportHandler with default values
 PIDReportHandler::PIDReportHandler() 
 {
-	nextEID = 1;
-	deviceState = MDEVICESTATE_SPRING;
+    nextEID = 1;  // Next available Effect ID starts at 1
+    deviceState = MDEVICESTATE_SPRING;  // Set device state to SPRING mode
 }
 
+// Destructor: Frees all effects when the handler is destroyed
 PIDReportHandler::~PIDReportHandler() 
 {
-	FreeAllEffects();
+    FreeAllEffects();  // Free all allocated effects
 }
 
+// Gets the next available effect ID and marks it as allocated
 uint8_t PIDReportHandler::GetNextFreeEffect(void)
 {
-	if (nextEID == MAX_EFFECTS)
-		return 0;
+    if (nextEID == MAX_EFFECTS)  // If all effects are allocated, return 0
+        return 0;
 
-	uint8_t id = nextEID++;
+    uint8_t id = nextEID++;  // Allocate the next effect ID
 
-	while (g_EffectStates[nextEID].state != 0)
-	{
-		if (nextEID >= MAX_EFFECTS)
-			break;  // the last spot was taken
-		nextEID++;
-	}
+    // Search for the next free spot in the effect states
+    while (g_EffectStates[nextEID].state != 0)
+    {
+        if (nextEID >= MAX_EFFECTS)  // If no more free spots, break out
+            break;
+        nextEID++;
+    }
 
-	g_EffectStates[id].state = MEFFECTSTATE_ALLOCATED;
+    // Mark the effect as allocated and update the PID state
+    g_EffectStates[id].state = MEFFECTSTATE_ALLOCATED;
     pidState.effectBlockIndex = id;
 
-	return id;
+    return id;  // Return the allocated effect ID
 }
 
+// Stops all currently active effects
 void PIDReportHandler::StopAllEffects(void)
 {
-	for (uint8_t id = 0; id <= MAX_EFFECTS; id++)
-		StopEffect(id);
+    for (uint8_t id = 0; id <= MAX_EFFECTS; id++)  // Loop through all effects
+        StopEffect(id);  // Stop each effect
 }
 
+// Starts a specific effect by its ID
 void PIDReportHandler::StartEffect(uint8_t id)
 {
-	if (id > MAX_EFFECTS)
-		return;
-	g_EffectStates[id].state = MEFFECTSTATE_PLAYING;
-	g_EffectStates[id].elapsedTime = 0;
-	g_EffectStates[id].startTime = (uint64_t)millis();
+    if (id > MAX_EFFECTS)  // Check if the effect ID is valid
+        return;
+    
+    // Mark the effect as playing, reset elapsed time, and record the start time
+    g_EffectStates[id].state = MEFFECTSTATE_PLAYING;
+    g_EffectStates[id].elapsedTime = 0;
+    g_EffectStates[id].startTime = (uint64_t)millis();
 }
 
+// Stops a specific effect by its ID
 void PIDReportHandler::StopEffect(uint8_t id)
 {
-	if (id > MAX_EFFECTS)
-		return;
-	g_EffectStates[id].state &= ~MEFFECTSTATE_PLAYING;
-	pidBlockLoad.ramPoolAvailable += SIZE_EFFECT;
+    if (id > MAX_EFFECTS)  // Check if the effect ID is valid
+        return;
+    
+    // Remove the "playing" state flag and free up memory
+    g_EffectStates[id].state &= ~MEFFECTSTATE_PLAYING;
+    pidBlockLoad.ramPoolAvailable += SIZE_EFFECT;
 }
 
+// Frees a specific effect by its ID
 void PIDReportHandler::FreeEffect(uint8_t id)
 {
-	if (id > MAX_EFFECTS)
-		return;
-	g_EffectStates[id].state = 0;
-	if (id < nextEID)
-		nextEID = id;
+    if (id > MAX_EFFECTS)  // Check if the effect ID is valid
+        return;
+    
+    g_EffectStates[id].state = 0;  // Mark the effect as free
+    if (id < nextEID)  // Update nextEID if needed
+        nextEID = id;
 }
 
+// Frees all effects and resets the handler
 void PIDReportHandler::FreeAllEffects(void)
 {
-	nextEID = 1;
-	memset((void*)& g_EffectStates, 0, sizeof(g_EffectStates));
-	pidBlockLoad.ramPoolAvailable = MEMORY_SIZE;
+    nextEID = 1;  // Reset next available effect ID
+    memset((void*)&g_EffectStates, 0, sizeof(g_EffectStates));  // Clear all effect states
+    pidBlockLoad.ramPoolAvailable = MEMORY_SIZE;  // Reset available memory
 }
 
+// Handles effect operation based on the received data (start, stop, loop)
 void PIDReportHandler::EffectOperation(USB_FFBReport_EffectOperation_Output_Data_t* data)
 {
-    //Serial.print("lC");
-    //Serial.println(data->loopCount);
     g_EffectStates[data->effectBlockIndex].loopCount = data->loopCount;
-	if (data->operation == 1)
-	{ // Start
-		if (data->loopCount == 0xFF)
+    if (data->operation == 1)  // Start effect
+    {
+        if (data->loopCount == 0xFF)
         {
             g_EffectStates[data->effectBlockIndex].totalDuration = USB_DURATION_INFINITE;
-		}
+        }
         else if (data->loopCount > 0)
         {
+            // Calculate total duration based on loop count
             g_EffectStates[data->effectBlockIndex].totalDuration = (
                 g_EffectStates[data->effectBlockIndex].startDelay
                 + g_EffectStates[data->effectBlockIndex].duration
-              ) * data->loopCount;
+            ) * data->loopCount;
         }
-		StartEffect(data->effectBlockIndex);
-	}
-	else if (data->operation == 2)
-	{ // StartSolo
-
-	  // Stop all first
-		StopAllEffects();
-		// Then start the given effect
-		StartEffect(data->effectBlockIndex);
-	}
-	else if (data->operation == 3)
-	{ // Stop
-		StopEffect(data->effectBlockIndex);
-	}
-	else
-	{
-	}
+        StartEffect(data->effectBlockIndex);  // Start the effect
+    }
+    else if (data->operation == 2)  // StartSolo: stop all and start a specific effect
+    {
+        StopAllEffects();
+        StartEffect(data->effectBlockIndex);
+    }
+    else if (data->operation == 3)  // Stop effect
+    {
+        StopEffect(data->effectBlockIndex);
+    }
 }
 
+// Handles the BlockFree operation to free one or all effects
 void PIDReportHandler::BlockFree(USB_FFBReport_BlockFree_Output_Data_t* data)
 {
-	uint8_t eid = data->effectBlockIndex;
-
-	if (eid == 0xFF)
-	{ // all effects
-		FreeAllEffects();
-	}
-	else
-	{
-		FreeEffect(eid);
-	}
+    uint8_t eid = data->effectBlockIndex;
+    if (eid == 0xFF)  // Free all effects
+    {
+        FreeAllEffects();
+    }
+    else  // Free a specific effect
+    {
+        FreeEffect(eid);
+    }
 }
 
+// Handles device control commands (enable/disable actuators, reset, pause, etc.)
 void PIDReportHandler::DeviceControl(USB_FFBReport_DeviceControl_Output_Data_t* data)
 {
+    uint8_t control = data->control;
 
-	uint8_t control = data->control;
-
-	if (control == 0x01)
-	{ // 1=Enable Actuators
-		pidState.status |= 2;
-	}
-	else if (control == 0x02)
-	{ // 2=Disable Actuators
-		pidState.status &= ~(0x02);
-	}
-	else if (control == 0x03)
-	{ // 3=Stop All Effects
-		StopAllEffects();
-		deviceState &= ~(MDEVICESTATE_SPRING);
-	}
-	else if (control == 0x04)
-	{ //  4=Reset
-		FreeAllEffects();
-		deviceState |= MDEVICESTATE_SPRING;
-	}
-	else if (control == 0x05)
-	{ // 5=Pause
-		deviceState |= MDEVICESTATE_PAUSED;
-	}
-	else if (control == 0x06)
-	{ // 6=Continue
-		deviceState &= ~(MDEVICESTATE_PAUSED);
-	}
-	else if (control & (0xFF - 0x3F))
-	{
-	}
+    switch (control)
+    {
+        case 0x01:  // Enable Actuators
+            pidState.status |= 2;
+            break;
+        case 0x02:  // Disable Actuators
+            pidState.status &= ~(0x02);
+            break;
+        case 0x03:  // Stop All Effects
+            StopAllEffects();
+            deviceState &= ~(MDEVICESTATE_SPRING);
+            break;
+        case 0x04:  // Reset Device
+            FreeAllEffects();
+            deviceState |= MDEVICESTATE_SPRING;
+            break;
+        case 0x05:  // Pause Device
+            deviceState |= MDEVICESTATE_PAUSED;
+            break;
+        case 0x06:  // Continue Device
+            deviceState &= ~(MDEVICESTATE_PAUSED);
+            break;
+        default:  // Handle unknown commands
+            break;
+    }
 }
 
+// Sets the device gain based on received data
 void PIDReportHandler::DeviceGain(USB_FFBReport_DeviceGain_Output_Data_t* data)
 {
-	deviceGain.gain = data->gain;
+    deviceGain.gain = data->gain;  // Update the device gain
 }
 
+// Placeholder for setting custom force (not yet implemented)
 void PIDReportHandler::SetCustomForce(USB_FFBReport_SetCustomForce_Output_Data_t* data)
 {
 }
 
+// Placeholder for setting custom force data (not yet implemented)
 void PIDReportHandler::SetCustomForceData(USB_FFBReport_SetCustomForceData_Output_Data_t* data)
 {
 }
 
+// Placeholder for setting download force sample (not yet implemented)
 void PIDReportHandler::SetDownloadForceSample(USB_FFBReport_SetDownloadForceSample_Output_Data_t* data)
 {
 }
 
+// Sets an effect with the provided data (effect type, duration, direction, etc.)
 void PIDReportHandler::SetEffect(USB_FFBReport_SetEffect_Output_Data_t* data)
 {
-	volatile TEffectState* effect = &g_EffectStates[data->effectBlockIndex];
+    volatile TEffectState* effect = &g_EffectStates[data->effectBlockIndex];
 
-	effect->duration = data->duration;
+    effect->duration = data->duration;  // Set effect duration
     for (int i=0; i<FFB_AXIS_COUNT; ++i)
     {
-        effect->direction[i] = data->direction[i];
+        effect->direction[i] = data->direction[i];  // Set effect direction
     }
-	effect->effectType = data->effectType;
-	effect->gain = data->gain;
-	effect->enableAxis = data->enableAxis;
+    effect->effectType = data->effectType;
+    effect->gain = data->gain;
+    effect->enableAxis = data->enableAxis;
     effect->startDelay = data->startDelay;
-    
-    // we can receive new length of effect while the effect is already looping
-    // recalculate durations as (duration+delay)*loopCount unless the loopCount is infinite
+
+    // Recalculate effect duration if looping
     if (effect->loopCount != 0xFF)
     {
         uint8_t loopCount = effect->loopCount > 0 ? effect->loopCount : 1;
         effect->totalDuration = (data->duration + data->startDelay) * loopCount;
     }
-	// Serial.print("lC: ");
-	// Serial.print(effect->loopCount);
-	// Serial.print(" d: ");
-	// Serial.print(effect->duration);
-	// Serial.print(" tD: ");
-	// Serial.print(effect->totalDuration);
-	// Serial.print(" sD: ");
-	// Serial.print(effect->startDelay);
-	// Serial.print(" dX: ");
-	// Serial.print(effect->direction[0]);
-	// Serial.print(" dY: ");
-	// Serial.print(effect->direction[1]);
-	// Serial.print(" eT: ");
-	// Serial.print(effect->effectType);
-	// Serial.print(" eA: ");
-	// Serial.println(effect->enableAxis);
-	//  effect->triggerRepeatInterval;
-	//  effect->samplePeriod;   // 0..32767 ms
-	//  effect->triggerButton;
 }
 
+// Sets the envelope for an effect (attack and fade levels and times)
 void PIDReportHandler::SetEnvelope(USB_FFBReport_SetEnvelope_Output_Data_t* data, volatile TEffectState* effect)
 {
-	effect->attackLevel = data->attackLevel;
-	effect->fadeLevel = data->fadeLevel;
-	effect->attackTime = data->attackTime;
-	effect->fadeTime = data->fadeTime;
+    effect->attackLevel = data->attackLevel;
+    effect->fadeLevel = data->fadeLevel;
+    effect->attackTime = data->attackTime;
+    effect->fadeTime = data->fadeTime;
 }
 
+// Sets the condition (axis-specific parameters) for an effect
 void PIDReportHandler::SetCondition(USB_FFBReport_SetCondition_Output_Data_t* data, volatile TEffectState* effect)
 {
-        uint8_t axis = data->parameterBlockOffset; 
-        if (axis >= effect->conditionReportsCount)
-        {
-            effect->conditionReportsCount = axis + 1;
-        }
+    uint8_t axis = data->parameterBlockOffset;  // Get the axis
+    if (axis >= effect->conditionReportsCount)
+    {
+        effect->conditionReportsCount = axis + 1;  // Update condition report count
+    }
 
-        effect->conditions[axis].cpOffset = data->cpOffset;
-        effect->conditions[axis].positiveCoefficient = data->positiveCoefficient;
-        effect->conditions[axis].negativeCoefficient = data->negativeCoefficient;
-        effect->conditions[axis].positiveSaturation = data->positiveSaturation;
-        effect->conditions[axis].negativeSaturation = data->negativeSaturation;
-        effect->conditions[axis].deadBand = data->deadBand;
+    // Set condition parameters for the axis
+    effect->conditions[axis].cpOffset = data->cpOffset;
+    effect->conditions[axis].positiveCoefficient = data->positiveCoefficient;
+    effect->conditions[axis].negativeCoefficient = data->negativeCoefficient;
+    effect->conditions[axis].positiveSaturation = data->positiveSaturation;
+    effect->conditions[axis].negativeSaturation = data->negativeSaturation;
+    effect->conditions[axis].deadBand = data->deadBand;
 }
 
+// Sets periodic parameters for an effect (magnitude, offset, phase, period)
 void PIDReportHandler::SetPeriodic(USB_FFBReport_SetPeriodic_Output_Data_t* data, volatile TEffectState* effect)
 {
-	effect->magnitude = data->magnitude;
-	effect->offset = data->offset;
-	effect->phase = data->phase;
-	effect->period = data->period;
+    effect->magnitude = data->magnitude;
+    effect->offset = data->offset;
+    effect->phase = data->phase;
+    effect->period = data->period;
 }
 
 void PIDReportHandler::SetConstantForce(USB_FFBReport_SetConstantForce_Output_Data_t* data, volatile TEffectState* effect)
@@ -281,97 +275,82 @@ void PIDReportHandler::CreateNewEffect(USB_FFBReport_CreateNewEffect_Feature_Dat
 	}
 }
 
+// Unpack USB data based on the incoming report ID
 void PIDReportHandler::UppackUsbData(uint8_t* data, uint16_t len)
 {
-	//Serial.print("len:");
-	//Serial.print(len);
-	//Serial.print("=");
-    //for (uint16_t i=0; i<len; ++i) {
-    //  if (data[i] < 0xA0) {
-    //    Serial.print(" ");
-    //  }
-    //  Serial.print(data[i], HEX);
-    //}
-    //Serial.println("");
-	uint8_t effectId = data[1]; // effectBlockIndex is always the second byte.
-	switch (data[0])    // reportID
-	{
-	case 1:
-		//Serial.println("SetEffect");
-		SetEffect((USB_FFBReport_SetEffect_Output_Data_t*)data);
-		break;
-	case 2:
-		//Serial.println("SetEnvelop");
-		SetEnvelope((USB_FFBReport_SetEnvelope_Output_Data_t*)data, &g_EffectStates[effectId]);
-		break;
-	case 3:
-		//Serial.println("SetCondition");
-		SetCondition((USB_FFBReport_SetCondition_Output_Data_t*)data, &g_EffectStates[effectId]);
-		break;
-	case 4:
-		//Serial.println("SetPeriodic");
-		SetPeriodic((USB_FFBReport_SetPeriodic_Output_Data_t*)data, &g_EffectStates[effectId]);
-		break;
-	case 5:
-		//Serial.println("SetConstantForce");
-		SetConstantForce((USB_FFBReport_SetConstantForce_Output_Data_t*)data, &g_EffectStates[effectId]);
-		break;
-	case 6:
-		//Serial.println("SetRampForce");
-		SetRampForce((USB_FFBReport_SetRampForce_Output_Data_t*)data, &g_EffectStates[effectId]);
-		break;
-	case 7:
-		//Serial.println("SetCustomForceData");
-		SetCustomForceData((USB_FFBReport_SetCustomForceData_Output_Data_t*)data);
-		break;
-	case 8:
-		//Serial.println("SetDownloadForceSample");
-		SetDownloadForceSample((USB_FFBReport_SetDownloadForceSample_Output_Data_t*)data);
-		break;
-	case 9:
-		break;
-	case 10:
-		//Serial.println("EffectOperation");
-		EffectOperation((USB_FFBReport_EffectOperation_Output_Data_t*)data);
-		break;
-	case 11:
-		//Serial.println("BlockFree");
-		BlockFree((USB_FFBReport_BlockFree_Output_Data_t*)data);
-		break;
-	case 12:
-		//Serial.println("DeviceControl");
-		DeviceControl((USB_FFBReport_DeviceControl_Output_Data_t*)data);
-		break;
-	case 13:
-		//Serial.println("DeviceGain");
-		DeviceGain((USB_FFBReport_DeviceGain_Output_Data_t*)data);
-		break;
-	case 14:
-		//Serial.println("SetCustomForce");
-		SetCustomForce((USB_FFBReport_SetCustomForce_Output_Data_t*)data);
-		break;
-	default:
-		break;
-	}
+    // Extract the effect ID from the incoming data
+    uint8_t effectId = data[1];  // The effectBlockIndex is always the second byte.
+    
+    // Handle different report IDs
+    switch (data[0])  // reportID
+    {
+    case 1:
+        SetEffect((USB_FFBReport_SetEffect_Output_Data_t*)data);  // Set effect
+        break;
+    case 2:
+        SetEnvelope((USB_FFBReport_SetEnvelope_Output_Data_t*)data, &g_EffectStates[effectId]);  // Set envelope
+        break;
+    case 3:
+        SetCondition((USB_FFBReport_SetCondition_Output_Data_t*)data, &g_EffectStates[effectId]);  // Set condition
+        break;
+    case 4:
+        SetPeriodic((USB_FFBReport_SetPeriodic_Output_Data_t*)data, &g_EffectStates[effectId]);  // Set periodic effect
+        break;
+    case 5:
+        SetConstantForce((USB_FFBReport_SetConstantForce_Output_Data_t*)data, &g_EffectStates[effectId]);  // Set constant force
+        break;
+    case 6:
+        SetRampForce((USB_FFBReport_SetRampForce_Output_Data_t*)data, &g_EffectStates[effectId]);  // Set ramp force
+        break;
+    case 7:
+        SetCustomForceData((USB_FFBReport_SetCustomForceData_Output_Data_t*)data);  // Set custom force data
+        break;
+    case 8:
+        SetDownloadForceSample((USB_FFBReport_SetDownloadForceSample_Output_Data_t*)data);  // Set download force sample
+        break;
+    case 9:
+        // No operation for this report ID
+        break;
+    case 10:
+        EffectOperation((USB_FFBReport_EffectOperation_Output_Data_t*)data);  // Perform effect operation
+        break;
+    case 11:
+        BlockFree((USB_FFBReport_BlockFree_Output_Data_t*)data);  // Free effect block
+        break;
+    case 12:
+        DeviceControl((USB_FFBReport_DeviceControl_Output_Data_t*)data);  // Control device
+        break;
+    case 13:
+        DeviceGain((USB_FFBReport_DeviceGain_Output_Data_t*)data);  // Set device gain
+        break;
+    case 14:
+        SetCustomForce((USB_FFBReport_SetCustomForce_Output_Data_t*)data);  // Set custom force
+        break;
+    default:
+        break;  // No action for unknown report IDs
+    }
 }
 
+// Get the PID pool report data
 uint8_t* PIDReportHandler::getPIDPool()
 {
-	FreeAllEffects();
+    FreeAllEffects();  // Free any previously allocated effects
 
-	pidPoolReport.reportId = 7;
-	pidPoolReport.ramPoolSize = MEMORY_SIZE;
-	pidPoolReport.maxSimultaneousEffects = MAX_EFFECTS;
-	pidPoolReport.memoryManagement = 3;
-	return (uint8_t*)& pidPoolReport;
+    pidPoolReport.reportId = 7;  // Set the report ID for the PID pool
+    pidPoolReport.ramPoolSize = MEMORY_SIZE;  // Set the size of the RAM pool
+    pidPoolReport.maxSimultaneousEffects = MAX_EFFECTS;  // Set the max simultaneous effects allowed
+    pidPoolReport.memoryManagement = 3;  // Set memory management value
+    return (uint8_t*)& pidPoolReport;  // Return the address of the PID pool report
 }
 
+// Get the PID block load report data
 uint8_t* PIDReportHandler::getPIDBlockLoad()
 {
-	return (uint8_t*)& pidBlockLoad;
+    return (uint8_t*)& pidBlockLoad;  // Return the address of the PID block load report
 }
 
+// Get the PID status report data
 uint8_t* PIDReportHandler::getPIDStatus()
 {
-	return (uint8_t*)& pidState;
+    return (uint8_t*)& pidState;  // Return the address of the PID status report
 }
