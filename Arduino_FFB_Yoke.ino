@@ -123,7 +123,7 @@ void loop() {
       }                                         // move motors
       nextJoystickMillis = currentMillis + 20;  // set time for new joystick loop
 
-      //SerialEvent();                                                  // check if serial event received
+      SerialEvent();                                                  // check if serial event received
     }  //nextJoystickMillis
   }    // else
 }  // loop

@@ -35,7 +35,7 @@ void SerialProcessReadCommand(int16_t cmd, int16_t val) {
   if (cmd == 0) return;
 
   // choose
-  SerialWriteStart(SERIAL_CMD_READ_ALL_VALUES); // return info to sender
+  SerialWriteStart(cmd); // return info to sender
   switch (cmd) {
     case SERIAL_CMD_DEBUG_START:                    // start debug mode
       blSerialDebug = true;                         // set flag
@@ -177,12 +177,13 @@ void setGainCommands(uint8_t memIndex, int16_t cmd, int16_t value) {
 void CMD_READ_ALL_VALUES() {
     // Alle Buttonzustände
     for (byte channel = 0; channel < 16; channel++) {
-        //SerialWriteValue(iYokeButtonPinStates & (1 << channel)); // Index 0 - 15
+      
+        SerialWriteValue(mux.GetYokeButtonPinStates() & (1 << channel)); // Index 0 - 15
     }
 
     // Alle Sensordaten
     for (byte channel = 0; channel < 16; channel++) {
-        //SerialWriteValue(iSensorPinStates & (1 << channel)); // Index 16 - 31
+        SerialWriteValue(mux.GetSensorPinStates() & (1 << channel)); // Index 16 - 31
     }
 
     // Roll-Achsenkonfiguration und Messwerte
@@ -214,20 +215,46 @@ void CMD_READ_ALL_PARAMS() {
     SerialWriteValue(adjPwmMin[MEM_ROLL]);   // 4
     SerialWriteValue(adjPwmMax[MEM_ROLL]);   // 5
 
-    // Gains für Roll
-    for (byte i = 0; i < sizeof(gains[MEM_ROLL]) / sizeof(gains[MEM_ROLL].totalGain); i++) {
-        SerialWriteValue(*((byte*)&gains[MEM_ROLL] + i)); // 6 - 17
-    }
+    // // Gains für Roll
+    // for (byte i = 0; i < sizeof(gains[MEM_ROLL]) / sizeof(byte); i++) {
+    //     SerialWriteValue(*((byte*)&gains[MEM_ROLL] + (i*sizeof(byte)))); // 6 - 17
+    // }
+
+    SerialWriteValue(gains[MEM_ROLL].totalGain);                    //6
+    SerialWriteValue(gains[MEM_ROLL].constantGain);                 //7
+    SerialWriteValue(gains[MEM_ROLL].rampGain);                     //8
+    SerialWriteValue(gains[MEM_ROLL].squareGain);                   //9
+    SerialWriteValue(gains[MEM_ROLL].sineGain);                     //10
+    SerialWriteValue(gains[MEM_ROLL].triangleGain);                 //11
+    SerialWriteValue(gains[MEM_ROLL].sawtoothdownGain);             //12
+    SerialWriteValue(gains[MEM_ROLL].sawtoothupGain);               //13
+    SerialWriteValue(gains[MEM_ROLL].springGain);                   //14
+    SerialWriteValue(gains[MEM_ROLL].damperGain);                   //15
+    SerialWriteValue(gains[MEM_ROLL].inertiaGain);                  //16
+    SerialWriteValue(gains[MEM_ROLL].frictionGain);                 //17
 
     // Effekte für Roll
     SerialWriteValue(effects[MEM_ROLL].frictionMaxPositionChange); // 18
     SerialWriteValue(effects[MEM_ROLL].inertiaMaxAcceleration);    // 19
     SerialWriteValue(effects[MEM_ROLL].damperMaxVelocity);         // 20
 
-    // Gains für Pitch
-    for (byte i = 0; i < sizeof(gains[MEM_PITCH]) / sizeof(gains[MEM_PITCH].totalGain); i++) {
-        SerialWriteValue(*((byte*)&gains[MEM_PITCH] + i)); // 21 - 32
-    }
+    // // Gains für Pitch
+    // for (byte i = 0; i < sizeof(gains[MEM_PITCH]) / sizeof(byte); i++) {
+    //     SerialWriteValue(*((byte*)&gains[MEM_PITCH] + (i*sizeof(byte)))); // 21 - 32
+    // }
+
+    SerialWriteValue(gains[MEM_PITCH].totalGain);                   //21
+    SerialWriteValue(gains[MEM_PITCH].constantGain);                //22
+    SerialWriteValue(gains[MEM_PITCH].rampGain);                    //23
+    SerialWriteValue(gains[MEM_PITCH].squareGain);                  //24
+    SerialWriteValue(gains[MEM_PITCH].sineGain);                    //25
+    SerialWriteValue(gains[MEM_PITCH].triangleGain);                //26
+    SerialWriteValue(gains[MEM_PITCH].sawtoothdownGain);            //27
+    SerialWriteValue(gains[MEM_PITCH].sawtoothupGain);              //28
+    SerialWriteValue(gains[MEM_PITCH].springGain);                  //29
+    SerialWriteValue(gains[MEM_PITCH].damperGain);                  //30
+    SerialWriteValue(gains[MEM_PITCH].inertiaGain);                 //31
+    SerialWriteValue(gains[MEM_PITCH].frictionGain);                //32
 
     // Effekte für Pitch
     SerialWriteValue(effects[MEM_PITCH].frictionMaxPositionChange); // 33

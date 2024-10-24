@@ -78,6 +78,14 @@ bool Multiplexer::MotorPower(){
   return blMotorPower;
 }
 
+uint16_t Multiplexer::GetYokeButtonPinStates(){
+  return iYokeButtonPinStates;
+}
+
+uint16_t Multiplexer::GetSensorPinStates(){
+  return iSensorPinStates;
+}
+
 // Method to update the joystick buttons based on multiplexer input
 void Multiplexer::UpdateJoystickButtons() {
 // Bit-Shift um 12 für Hat-Switch-Position

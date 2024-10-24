@@ -36,6 +36,8 @@ public:
     bool EndSwitchPitchDown();   
     bool CalibrationButtonPushed(); 
     bool MotorPower();
+    uint16_t GetYokeButtonPinStates();
+    uint16_t GetSensorPinStates();
 };
 
 #endif

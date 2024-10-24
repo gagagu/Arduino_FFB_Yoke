@@ -126,7 +126,10 @@ void MoveMotorByForce(byte &rSpeed,
     // cut force to maximum value
     int pForce = constrain(abs(gForce), 0, forceMax);
     // calculate motor speed (pwm) by force between min pwm and max pwm speed
-    rSpeed = map(pForce, 0, forceMax, pwmMin, pwmMax);
+    if(abs(pForce) > 10)
+      rSpeed = map(pForce, 0, forceMax, pwmMin, pwmMax);
+    else
+      rSpeed=0;
 
    // which direction?
     if (gForce > 0) {

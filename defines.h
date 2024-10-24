@@ -3,7 +3,7 @@
 
 #define SERIAL_BAUD 115200  // Communication Speed
 
-#define SERIAL_DEBUG 1
+//#define SERIAL_DEBUG 1
 
 #define BUZZER_PIN 12
 
@@ -139,7 +139,7 @@
 /******************************************
    Calibration Constants
 *******************************************/
-  #define  CALIBRATION_MAX_SPEED 80;                        // Maximum speed
+  #define  CALIBRATION_MAX_SPEED 100;                        // Maximum speed
   #define CALIBRATION_AXIS_MOVEMENT_TIMEOUT 4000;           // Timeout of 4 seconds for no movement
   #define CALIBRATION_TIMEOUT 20000;                        // Timeout of 20 seconds for calibration
   #define CALIBRATION_SPEED_INCREMENT 10;                   // the speed is increased until asix movement, this is added to speed then move´ment indicates 
