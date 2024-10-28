@@ -7,6 +7,8 @@ I am not responsible for any damage to man and machine. Be careful when handling
 If you want to use it in an commercial way please contact me.
 
 ## New Hardware version available version 2.0
+The main branch is now V2.0 which only work with Hardware and Schematics 2.0!
+
 JR4 has created a new hardware for this project (many thanks) and the new parts are available [here](https://www.thingiverse.com/thing:6464701)
 
 My remixes for this new hardware are available [here](https://www.thingiverse.com/thing:6786283)
