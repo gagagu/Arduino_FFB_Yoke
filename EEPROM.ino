@@ -1,8 +1,3 @@
-
-#define EEPROM_DATA_AVAILABLE_INDEX 0     // eeprom address to indicate data available
-                                          // space between reserved
-#define EEPROM_DATA_INDEX 10              // eeprom start address for data
-
 /******************************************
   clear all data in eeprom
 *******************************************/
@@ -124,7 +119,7 @@ void WriteEepromInt16(int &myAddress, int16_t myValue) {
 /******************************************
   reads an int16_t value  from eeprom
 *******************************************/
-void readEepromInt16(int &myAddress, int16_t myValue) {
+void ReadEepromInt16(int &myAddress, int16_t myValue) {
     EEPROM.get(myAddress, myValue);
     myAddress += sizeof(int16_t);
 } //WriteEepromInt16

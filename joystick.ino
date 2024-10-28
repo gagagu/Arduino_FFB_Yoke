@@ -1,50 +1,22 @@
-// Default vaules for gains and effect if nothing saved into eeprom
-#define default_gain 100
-#define default_friction_gain 25
-
-#define default_frictionMaxPositionChange_ROLL 125;
-#define default_inertiaMaxAcceleration_ROLL 100;
-#define default_damperMaxVelocity_ROLL 350;
-
-#define default_frictionMaxPositionChange_PITCH 125;
-#define default_inertiaMaxAcceleration_PITCH 100;
-#define default_damperMaxVelocity_PITCH 350;
-
-#define default_PITCH_FORCE_MAX 10000;
-#define default_PITCH_PWM_MAX 150;
-#define default_PITCH_PWM_MIN 40;
-
-#define default_ROLL_FORCE_MAX 10000;
-#define default_ROLL_PWM_MAX 150;
-#define default_ROLL_PWM_MIN 40;
-
-// variables for calculation
-unsigned long lastEffectsUpdate = 0;    // count millis for next effect calculation
-int16_t lastX;                          // X value from last loop
-int16_t lastY;                          // Y value from last loop
-int16_t lastVelX;                       // Velocity X value from last loop
-int16_t lastVelY;                       // Velocity y value from last loop
-int16_t lastAccelX;                     // Acceleration X value from last loop
-int16_t lastAccelY;                     // Acceleration X value from last loop
 
 /******************************************
   setup joystick and initialisation
 *******************************************/
-void setupJoystick() {
+void SetupJoystick() {
   if(IsEepromDataAvailable()==1)
   {
     ReadDataFromEeprom();
   }else{
-    setupDefaults();
+    SetupDefaults();
   }
 
-  setGains();                           // set gains
-  setRangeJoystick();                   // set range
+  SetGains();                           // set gains
+  SetRangeJoystick();                   // set range
   Joystick.begin(false);                // start joystick emulation (no auto send updates);
 }
 
 // default values
-void setupDefaults(){
+void SetupDefaults(){
   gains[MEM_ROLL].totalGain = default_gain;
   gains[MEM_ROLL].constantGain = default_gain;
   gains[MEM_ROLL].rampGain = default_gain;
@@ -88,23 +60,26 @@ void setupDefaults(){
   adjPwmMax[MEM_PITCH]=default_PITCH_PWM_MAX;
 }
 
-void setRangeJoystick() {
-  Joystick.setXAxisRange(JOYSTICK_minX, JOYSTICK_maxX);
-  Joystick.setYAxisRange(JOYSTICK_minY, JOYSTICK_maxY);
+void SetRangeJoystick() {
+  Joystick.setXAxisRange(rollConfig.iMin, rollConfig.iMax);
+  Joystick.setYAxisRange(pitchConfig.iMin, pitchConfig.iMax);
 }
 
-void setGains() {
+void SetGains() {
   Joystick.setGains(gains);
 }
 
-void updateEffects(bool recalculate) {
+void UpdateEffects(bool recalculate) {
   //If you need to use the spring effect, set the following parameters.`Position` is the current position of the force feedback axis.
   //For example, connect the encoder with the action axis,the current encoder value is `Positon` and the max encoder value is `MaxPosition`.
-  effects[MEM_ROLL].springMaxPosition = JOYSTICK_maxX;
-  effects[MEM_PITCH].springMaxPosition = JOYSTICK_maxY;
+  effects[MEM_ROLL].springMaxPosition = rollConfig.iMax;
+  effects[MEM_PITCH].springMaxPosition = pitchConfig.iMax;
 
   effects[MEM_ROLL].springPosition = counterRoll.read();
   effects[MEM_PITCH].springPosition = counterPitch.read();
+
+
+  
 
   unsigned long currentMillis = millis();
   int16_t diffTime = currentMillis - lastEffectsUpdate;
@@ -146,8 +121,11 @@ void updateEffects(bool recalculate) {
     effects[MEM_PITCH].damperVelocity = lastVelY;
   }
 
-  Joystick.setXAxis(counterRoll.read());
+
+  Joystick.setXAxis(-counterRoll.read());
   Joystick.setYAxis(counterPitch.read());
+
+
   Joystick.setEffectParams(effects);
 
   Joystick.getForce(forces);
