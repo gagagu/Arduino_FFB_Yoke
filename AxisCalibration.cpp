@@ -1,7 +1,44 @@
+/* 
+ Created by A.Eckers aka Gagagu
+ http://www.gagagu.de
+ https://github.com/gagagu/Arduino_FFB_Yoke
+ https://www.youtube.com/@gagagu01
+*/
+
+/*
+  This repository contains code for Arduino projects. 
+  The code is provided "as is," without warranty of any kind, either express or implied, 
+  including but not limited to the warranties of merchantability, 
+  fitness for a particular purpose, or non-infringement. 
+  The author(s) make no representations or warranties about the accuracy or completeness of 
+  the code or its suitability for your specific use case.
+
+  By using this code, you acknowledge and agree that you are solely responsible for any 
+  consequences that may arise from its use. 
+
+  For DIY projects involving electronic and electromechanical moving parts, caution is essential. 
+  Ensure that you take the appropriate safety precautions, particularly when working with electricity. 
+  Only work with devices if you understand their functionality and potential risks, and always wear 
+  appropriate protective equipment. 
+  Make sure you are working in a safe, well-lit environment, and that all components are properly installed and secured to avoid injury or damage.
+
+  Special caution is required when building a force feedback device. Unexpected or sudden movements may occur, 
+  which could lead to damage to people or other objects. 
+  Ensure that all mechanical parts are securely mounted and that the work area is free of obstacles.
+  
+  By using this project, you acknowledge and agree that you are solely responsible for any consequences that may arise from its use. 
+  The author(s) will not be held liable for any damages, injuries, or issues arising from the use of the project, 
+  including but not limited to malfunctioning hardware, electrical damage, personal injury, or damage caused by 
+  unintended movements of the force feedback device. The responsibility for proper handling, installation, 
+  and use of the devices and components lies with the user.
+  
+  Use at your own risk.
+*/
+
 #include "AxisCalibration.h"
 
-Axis::Axis(int motorLeftPin, int motorRightPin, bool isRoll, Encoder* encoder, Multiplexer* multiplexerPtr)
-    : motorPinLeft(motorLeftPin), motorPinRight(motorRightPin), blIsRoll(isRoll), encoder(encoder), speed(1), lastMovementTime(millis()), multiplexer(multiplexerPtr)
+Axis::Axis(int motorLeftPin, int motorRightPin, bool isRoll, Encoder* encoderPtr, Multiplexer* multiplexerPtr, BeepManager* beepManagerPtr)
+    : motorPinLeft(motorLeftPin), motorPinRight(motorRightPin), blIsRoll(isRoll), encoder(encoderPtr), speed(1), lastMovementTime(millis()), multiplexer(multiplexerPtr), beepManager(beepManagerPtr)
 {
 }
 
@@ -43,6 +80,7 @@ void Axis::ManageMovement( bool direction, unsigned long& lastMovementTime, int&
     MoveMotor(direction);
 }
 
+// read multiplexer for end stops
 void Axis::ReadMultiplexer(){
     multiplexer->ReadMux();  // Update end switch states
     if(blIsRoll)
@@ -55,6 +93,7 @@ void Axis::ReadMultiplexer(){
     }
 }
 
+// reset the encoder counter
 int Axis::ResetEncoder(){
   encoder->write(0);
   return 0;
@@ -126,17 +165,6 @@ void Axis::Calibrate() {
     speedIncreased = false;  // Reset for next loop
 
     while (!blEndSwitchLeft && !blEndSwitchRight) {
-        // Serial.print(", direction:");
-        // Serial.print(direction);
-        // Serial.print(", lastMovementTime:");
-        // Serial.print(lastMovementTime);
-        // Serial.print(", lastEncoderValue:");
-        // Serial.print(lastEncoderValue);
-        // Serial.print(", speedIncreased:");
-        // Serial.print(speedIncreased);
-        // Serial.print(", speed:");
-        // Serial.println(speed);
-
         ManageMovement(direction, lastMovementTime, lastEncoderValue, speedIncreased);
 
         if(CheckTimeouts(lastMovementTime, calibrationStartTime))
@@ -172,17 +200,6 @@ void Axis::Calibrate() {
     speedIncreased = false;  // Reset for next loop
 
     while (!blEndSwitchLeft) {
-        // Serial.print(", direction:");
-        // Serial.print(direction);
-        // Serial.print(", lastMovementTime:");
-        // Serial.print(lastMovementTime);
-        // Serial.print(", lastEncoderValue:");
-        // Serial.print(lastEncoderValue);
-        // Serial.print(", speedIncreased:");
-        // Serial.print(speedIncreased);
-        // Serial.print(", speed:");
-        // Serial.println(speed);
-
         ManageMovement(direction, lastMovementTime, lastEncoderValue, speedIncreased);
 
         if(CheckTimeouts(lastMovementTime, calibrationStartTime))
@@ -210,6 +227,12 @@ void Axis::Calibrate() {
     config.iMin = -config.iMax;            // Set iMin as the negative value of iMax
     encoder->write(config.iMax);  // Set the encoder to the iMax value at the end of the calibration
 
+  // Serial.print(", Min1:");      
+  // Serial.print(config.iMin);
+  // Serial.print(", Max1:");
+  // Serial.print(config.iMax);  
+  // Serial.println("");
+
     // Step 4: Move back until the encoder reaches 0
     delay(1000);
     speed = 1;
@@ -224,33 +247,16 @@ void Axis::Calibrate() {
     // 4. Move axis to the middle
     //**********************************************************************
     while (((isLastValuePositive && encoder->read() >= 0) || (!isLastValuePositive && encoder->read() <= 0)) && !blEndSwitchRight) {
-        // Serial.print(", direction:");
-        // Serial.print(direction);
-        // Serial.print(", lastMovementTime:");
-        // Serial.print(lastMovementTime);
-        // Serial.print(", lastEncoderValue:");
-        // Serial.print(lastEncoderValue);
-        // Serial.print(", speedIncreased:");
-        // Serial.print(speedIncreased);
-        // Serial.print(", speed:");
-        // Serial.println(speed);
-
         ManageMovement( direction, lastMovementTime, lastEncoderValue, speedIncreased);
 
         if (millis() - lastMovementTime >= timeout) {
             StopMotor();
-            #ifdef SERIAL_DEBUG
-              Serial.println("Error: No movement detected for 4 seconds. Calibration aborted.");
-            #endif
             config.blError = true;
             return;
         }
 
         if (millis() - calibrationStartTime >= calibrationTimeout) {
             StopMotor();
-            #ifdef SERIAL_DEBUG
-              Serial.println("Error: Calibration timeout (20 seconds). Aborted.");
-            #endif
             config.blError = true;
             return;
         }
@@ -260,11 +266,31 @@ void Axis::Calibrate() {
 
     // Stop the motor when the encoder reaches 0
     StopMotor();
-
-  
 }
 
 // Method to get the current axis configuration
 AxisConfiguration Axis::GetConfiguration() {
     return config;
+}
+
+bool Axis::CheckError(bool isRoll){
+    if (config.blError) {
+      // error occured
+      beepManager->CalibrationError();  // Calibration error beep
+      delay(BEEP_CODE_DELAY);
+      // switch error and give beep codes
+      if (config.blEncoderInverted)
+        beepManager->CalibrationEncoderInverted(isRoll);
+
+      if (config.blMotorInverted)
+        beepManager->CalibrationMotorInverted(isRoll);
+
+      if (config.blAxisTimeout)
+        beepManager->CalibrationTimeoutMotor(isRoll);
+
+      if (config.blTimeout)
+        beepManager->CalibrationTimeoutGeneral(isRoll);
+    }
+
+    return config.blError;
 }

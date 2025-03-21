@@ -1,3 +1,40 @@
+/* 
+ Created by A.Eckers aka Gagagu
+ http://www.gagagu.de
+ https://github.com/gagagu/Arduino_FFB_Yoke
+ https://www.youtube.com/@gagagu01
+*/
+
+/*
+  This repository contains code for Arduino projects. 
+  The code is provided "as is," without warranty of any kind, either express or implied, 
+  including but not limited to the warranties of merchantability, 
+  fitness for a particular purpose, or non-infringement. 
+  The author(s) make no representations or warranties about the accuracy or completeness of 
+  the code or its suitability for your specific use case.
+
+  By using this code, you acknowledge and agree that you are solely responsible for any 
+  consequences that may arise from its use. 
+
+  For DIY projects involving electronic and electromechanical moving parts, caution is essential. 
+  Ensure that you take the appropriate safety precautions, particularly when working with electricity. 
+  Only work with devices if you understand their functionality and potential risks, and always wear 
+  appropriate protective equipment. 
+  Make sure you are working in a safe, well-lit environment, and that all components are properly installed and secured to avoid injury or damage.
+
+  Special caution is required when building a force feedback device. Unexpected or sudden movements may occur, 
+  which could lead to damage to people or other objects. 
+  Ensure that all mechanical parts are securely mounted and that the work area is free of obstacles.
+  
+  By using this project, you acknowledge and agree that you are solely responsible for any consequences that may arise from its use. 
+  The author(s) will not be held liable for any damages, injuries, or issues arising from the use of the project, 
+  including but not limited to malfunctioning hardware, electrical damage, personal injury, or damage caused by 
+  unintended movements of the force feedback device. The responsibility for proper handling, installation, 
+  and use of the devices and components lies with the user.
+  
+  Use at your own risk.
+*/
+
 /******************************************
    Check if serial data are available and 
    command received
@@ -187,15 +224,15 @@ void CMD_READ_ALL_VALUES() {
     }
 
     // Roll-Achsenkonfiguration und Messwerte
-    SerialWriteValue(rollConfig.iMin); // 32
-    SerialWriteValue(rollConfig.iMax); // 33
+    SerialWriteValue( rollAxis.GetConfiguration().iMin); // 32
+    SerialWriteValue( rollAxis.GetConfiguration().iMax); // 33
     SerialWriteValue(counterRoll.read()); // 34
     SerialWriteValue(roll_speed); // 35
     SerialWriteValue(forces[MEM_ROLL]); // 36
 
     // Pitch-Achsenkonfiguration und Messwerte
-    SerialWriteValue(pitchConfig.iMin); // 37
-    SerialWriteValue(pitchConfig.iMax); // 38
+    SerialWriteValue( pitchAxis.GetConfiguration().iMin); // 37
+    SerialWriteValue( pitchAxis.GetConfiguration().iMax); // 38
     SerialWriteValue(counterPitch.read()); // 39
     SerialWriteValue(pitch_speed); // 40
     SerialWriteValue(forces[MEM_PITCH]); // 41
@@ -215,10 +252,6 @@ void CMD_READ_ALL_PARAMS() {
     SerialWriteValue(adjPwmMin[MEM_ROLL]);   // 4
     SerialWriteValue(adjPwmMax[MEM_ROLL]);   // 5
 
-    // // Gains für Roll
-    // for (byte i = 0; i < sizeof(gains[MEM_ROLL]) / sizeof(byte); i++) {
-    //     SerialWriteValue(*((byte*)&gains[MEM_ROLL] + (i*sizeof(byte)))); // 6 - 17
-    // }
 
     SerialWriteValue(gains[MEM_ROLL].totalGain);                    //6
     SerialWriteValue(gains[MEM_ROLL].constantGain);                 //7
@@ -238,10 +271,6 @@ void CMD_READ_ALL_PARAMS() {
     SerialWriteValue(effects[MEM_ROLL].inertiaMaxAcceleration);    // 19
     SerialWriteValue(effects[MEM_ROLL].damperMaxVelocity);         // 20
 
-    // // Gains für Pitch
-    // for (byte i = 0; i < sizeof(gains[MEM_PITCH]) / sizeof(byte); i++) {
-    //     SerialWriteValue(*((byte*)&gains[MEM_PITCH] + (i*sizeof(byte)))); // 21 - 32
-    // }
 
     SerialWriteValue(gains[MEM_PITCH].totalGain);                   //21
     SerialWriteValue(gains[MEM_PITCH].constantGain);                //22

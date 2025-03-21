@@ -1,19 +1,70 @@
+/* 
+ Created by A.Eckers aka Gagagu
+ http://www.gagagu.de
+ https://github.com/gagagu/Arduino_FFB_Yoke
+ https://www.youtube.com/@gagagu01
+*/
+
+/*
+  This repository contains code for Arduino projects. 
+  The code is provided "as is," without warranty of any kind, either express or implied, 
+  including but not limited to the warranties of merchantability, 
+  fitness for a particular purpose, or non-infringement. 
+  The author(s) make no representations or warranties about the accuracy or completeness of 
+  the code or its suitability for your specific use case.
+
+  By using this code, you acknowledge and agree that you are solely responsible for any 
+  consequences that may arise from its use. 
+
+  For DIY projects involving electronic and electromechanical moving parts, caution is essential. 
+  Ensure that you take the appropriate safety precautions, particularly when working with electricity. 
+  Only work with devices if you understand their functionality and potential risks, and always wear 
+  appropriate protective equipment. 
+  Make sure you are working in a safe, well-lit environment, and that all components are properly installed and secured to avoid injury or damage.
+
+  Special caution is required when building a force feedback device. Unexpected or sudden movements may occur, 
+  which could lead to damage to people or other objects. 
+  Ensure that all mechanical parts are securely mounted and that the work area is free of obstacles.
+  
+  By using this project, you acknowledge and agree that you are solely responsible for any consequences that may arise from its use. 
+  The author(s) will not be held liable for any damages, injuries, or issues arising from the use of the project, 
+  including but not limited to malfunctioning hardware, electrical damage, personal injury, or damage caused by 
+  unintended movements of the force feedback device. The responsibility for proper handling, installation, 
+  and use of the devices and components lies with the user.
+  
+  Use at your own risk.
+*/
+
 /***************
   Pin setup
 ****************/
-
 void ArduinoSetup() {
 
-  // Pitch Pins
+  // Pitch motor driver Pins
   pinMode(PITCH_EN, OUTPUT);
   pinMode(PITCH_U_PWM, OUTPUT);
   pinMode(PITCH_D_PWM, OUTPUT);
 
-  // Roll Pins
+  // Roll motor driver  Pins
   pinMode(ROLL_EN, OUTPUT);
   pinMode(ROLL_R_PWM, OUTPUT);
   pinMode(ROLL_L_PWM, OUTPUT);
 
+  // Buzzer pin
+  pinMode(BUZZER_PIN, OUTPUT);
+
+#ifdef ARDUINO_PRO_MICRO  
+  // Multiplexer Yoke Buttons
+  pinMode(MUX_YOKE_OUT, INPUT);
+  pinMode(MUX_YOKE_PL, OUTPUT);
+  pinMode(MUX_YOKE_CLK, OUTPUT);
+
+  // Multiplexer Calibration Button, Power Measure, IR Sensors
+  pinMode(MUX_INT_OUT, INPUT);
+  pinMode(MUX_INT_PL, OUTPUT);
+  pinMode(MUX_INT_CLK, OUTPUT);
+
+#else
   // Buttons Pins (Multiplexer)
   pinMode(MUX_S0, OUTPUT);
   pinMode(MUX_S1, OUTPUT);
@@ -25,23 +76,34 @@ void ArduinoSetup() {
 
   pinMode(MUX_EN_INPUT, OUTPUT);
   pinMode(MUX_SIGNAL_INPUT, INPUT);
+#endif
 
-  // define pin default states
-  // Pitch
-  digitalWrite(PITCH_EN, LOW);
-  digitalWrite(PITCH_U_PWM, LOW);
-  digitalWrite(PITCH_D_PWM, LOW);
-  //Roll
-  digitalWrite(ROLL_EN, LOW);
-  digitalWrite(ROLL_R_PWM, LOW);
-  digitalWrite(ROLL_L_PWM, LOW);
+// define pin default states
+digitalWrite(BUZZER_PIN,LOW);
+
+// Pitch
+digitalWrite(PITCH_EN, LOW);
+digitalWrite(PITCH_U_PWM, LOW);
+digitalWrite(PITCH_D_PWM, LOW);
+//Roll
+digitalWrite(ROLL_EN, LOW);
+digitalWrite(ROLL_R_PWM, LOW);
+digitalWrite(ROLL_L_PWM, LOW);
+
   // Multiplexer
+#ifdef ARDUINO_PRO_MICRO  
+  digitalWrite(MUX_YOKE_PL, HIGH);
+  digitalWrite(MUX_YOKE_CLK, LOW);
+  digitalWrite(MUX_INT_PL, HIGH);
+  digitalWrite(MUX_INT_CLK, LOW);
+#else
   digitalWrite(MUX_S0, LOW);
   digitalWrite(MUX_S1, LOW);
   digitalWrite(MUX_S2, LOW);
   digitalWrite(MUX_S3, LOW);
   digitalWrite(MUX_EN_YOKE, HIGH);
   digitalWrite(MUX_EN_INPUT, HIGH);
+#endif
 
   // not for all Arduinos!
   // This sets the PWM Speed to maximun for noise reduction
@@ -51,6 +113,12 @@ void ArduinoSetup() {
 
   // Timer4: pin 13 & 6
   TCCR4B = _BV(CS40);  // change the PWM frequencey to 31.25kHz - pin 13 & 6
+
+  //Timer3: pin 5
+ #ifdef ARDUINO_PRO_MICRO  
+   TCCR3B = _BV(CS30);  // Change the PWM frequency to 31.25kHz - pin 5
+ #endif
+ 
 }  //ArduinoSetup
 
 /**************************

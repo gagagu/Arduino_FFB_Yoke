@@ -1,0 +1,168 @@
+{
+  "uuid": "5dbb511ddb071dd0d3b3139304d25c46",
+  "path": "Offline/FFB_Arduino_Yoke_2.0_ProMicro",
+  "name": "FFB_Arduino_Yoke_2.0_ProMicro",
+  "content": "",
+  "created_at": "2025-01-07 08:34:41",
+  "updated_at": "2025-01-13 16:43:48",
+  "stick": "",
+  "documents": [
+    {
+      "uuid": "bae0760d92ee7cb7c6bedb4116182ad0",
+      "title": "Sheet_Arduino_Yoke_2.0_ProMicro",
+      "description": "",
+      "docType": "1",
+      "master": "",
+      "thumb": "/images/thumb-default.png",
+      "components": {
+        "b0db3a79c51b40ce909f905467e46eab": 1,
+        "11c630091dcb4ace96426fdd267d59fd": 1,
+        "5d56951fd43d4b5083b0f3cd9bfd5587": 7,
+        "03f2a4d0bb1c41d0b4c0fd559cf28da2": 2,
+        "7bd7894013a44db1b86a461fcfcf85ca": 2,
+        "5fb8876e1dc547ac93fcff5fa8c76865": 1,
+        "95d48fe212ce4757aa50189d0e7589b9": 1,
+        "595e36486c164476a7878ca0dc97915a": 1,
+        "7bedb7b0a2754ecf85dac57a71f47d71": 4,
+        "da2f0cd7ff0b4fed903d1d8df650b3e9": 2,
+        "0b605335f51d417f9b7af577566d16d2": 1,
+        "ab681d90d2df42aea10e5365a2a7b928": 1
+      },
+      "BOM": [
+        [
+          "Value",
+          "Quantity",
+          "Package",
+          "Components",
+          "CustomPara"
+        ],
+        [
+          "10k",
+          6,
+          "R_AXIAL-0.4",
+          "1K,2K,10K-3,10K-4,10K-5,10K-6",
+          {
+            "Manufacturer Part": "",
+            "Manufacturer": "",
+            "Supplier": "",
+            "Supplier Part": ""
+          }
+        ],
+        [
+          "NPN2N4401",
+          1,
+          "2N4401",
+          "2N4401",
+          {
+            "Manufacturer Part": "",
+            "Manufacturer": "",
+            "Supplier": "",
+            "Supplier Part": ""
+          }
+        ],
+        [
+          "47k",
+          1,
+          "R_AXIAL-0.4",
+          "47K-2",
+          {
+            "Manufacturer Part": "",
+            "Manufacturer": "",
+            "Supplier": "",
+            "Supplier Part": ""
+          }
+        ],
+        [
+          "74HC165D",
+          1,
+          "PDIP-16_L19.2-W6.6-P2.54-LS7.6-BL",
+          "74HC165",
+          {
+            "Manufacturer Part": "AiP74HC165DA.TB",
+            "Manufacturer": "I-CORE(中微爱芯)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C2961882"
+          }
+        ],
+        [
+          "ArduinoProMicro",
+          1,
+          "ARDUINOPROMICRO_RA",
+          "ARDUINO_PRO_MICRO",
+          {
+            "Manufacturer Part": "",
+            "Manufacturer": "",
+            "Supplier": "",
+            "Supplier Part": ""
+          }
+        ],
+        [
+          "2700Hz",
+          1,
+          "BUZ-TH_BD9.0-P4.00-D0.6-FD",
+          "BUZZER1",
+          {
+            "Manufacturer Part": "QMB-09B-03",
+            "Manufacturer": "华能",
+            "Supplier": "LCSC",
+            "Supplier Part": "C96256"
+          }
+        ],
+        [
+          "Yoke",
+          1,
+          "CONN-TH_5P-P2.54_MX128-2.54-05P-GN01-CU-Y-A",
+          "YOKE",
+          {
+            "Manufacturer Part": "MX128-2.54-05P-GN01-Cu-Y-A",
+            "Manufacturer": "MAX(迈旭)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C5188445"
+          }
+        ]
+      ],
+      "updateTime": 1736782555,
+      "createTime": 1666593347,
+      "histories": [],
+      "created_at": "2022-10-24 08:35:47",
+      "updated_at": "2025-01-13 16:35:55"
+    },
+    {
+      "uuid": "1b384428d27c4cadb32077ea871a3be9",
+      "title": "PCB_FFB_Arduino_Yoke_2.0_ProMicro",
+      "filename": "PCB_FFB_Arduino_Yoke_2.0_ProMicro.json",
+      "description": "",
+      "docType": "3",
+      "master": "",
+      "thumb": "/images/thumb-default.png",
+      "components": {
+        "3cedd95c5b4143699603b299d66ddf28": 1,
+        "3367620777a54740aa19fe49dae42acd": 2,
+        "8a64bfacc8a0486b9d92a1e07e536b59": 2,
+        "f3c835f3aa5346319509f2fc386233bb": 1,
+        "593a2d196b364799856a897a9f4e3077": 4,
+        "e82cff493bd142bdad6866f028f74b79": 2,
+        "5e634eb6fa834891921a9205a0313d5f": 1,
+        "7ae61b24ec5d431087f34ea7cfebbd9e": 1,
+        "f142b4238e0e42b7bde42b78074d87f1": 1,
+        "fd160fa963da4c4da3805c32162bc6e1": 1,
+        "5905db98cde4487fbb177070aa85bbe1": 7,
+        "c64ae7d2c6d046ba99ba3f1311496e78": 1
+      },
+      "BOM": [],
+      "updateTime": 1736783028,
+      "createTime": 1666594569,
+      "histories": [],
+      "created_at": "2022-10-24 08:56:09",
+      "updated_at": "2025-01-13 16:43:48"
+    }
+  ],
+  "sort": [
+    "7273bdf533e42afe02162c40138cfd31",
+    "bae0760d92ee7cb7c6bedb4116182ad0"
+  ],
+  "title": "FFB_Arduino_Yoke_2.0_ProMicro",
+  "foldername": "FFB_Arduino_Yoke_2.0_ProMicro",
+  "schfilename": "FFB_Arduino_Yoke_2.0_ProMicro.json",
+  "schfilemtime": 1736782555099
+}

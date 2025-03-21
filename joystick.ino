@@ -1,3 +1,40 @@
+/* 
+ Created by A.Eckers aka Gagagu
+ http://www.gagagu.de
+ https://github.com/gagagu/Arduino_FFB_Yoke
+ https://www.youtube.com/@gagagu01
+*/
+
+/*
+  This repository contains code for Arduino projects. 
+  The code is provided "as is," without warranty of any kind, either express or implied, 
+  including but not limited to the warranties of merchantability, 
+  fitness for a particular purpose, or non-infringement. 
+  The author(s) make no representations or warranties about the accuracy or completeness of 
+  the code or its suitability for your specific use case.
+
+  By using this code, you acknowledge and agree that you are solely responsible for any 
+  consequences that may arise from its use. 
+
+  For DIY projects involving electronic and electromechanical moving parts, caution is essential. 
+  Ensure that you take the appropriate safety precautions, particularly when working with electricity. 
+  Only work with devices if you understand their functionality and potential risks, and always wear 
+  appropriate protective equipment. 
+  Make sure you are working in a safe, well-lit environment, and that all components are properly installed and secured to avoid injury or damage.
+
+  Special caution is required when building a force feedback device. Unexpected or sudden movements may occur, 
+  which could lead to damage to people or other objects. 
+  Ensure that all mechanical parts are securely mounted and that the work area is free of obstacles.
+  
+  By using this project, you acknowledge and agree that you are solely responsible for any consequences that may arise from its use. 
+  The author(s) will not be held liable for any damages, injuries, or issues arising from the use of the project, 
+  including but not limited to malfunctioning hardware, electrical damage, personal injury, or damage caused by 
+  unintended movements of the force feedback device. The responsibility for proper handling, installation, 
+  and use of the devices and components lies with the user.
+  
+  Use at your own risk.
+*/
+
 
 /******************************************
   setup joystick and initialisation
@@ -61,8 +98,8 @@ void SetupDefaults(){
 }
 
 void SetRangeJoystick() {
-  Joystick.setXAxisRange(rollConfig.iMin, rollConfig.iMax);
-  Joystick.setYAxisRange(pitchConfig.iMin, pitchConfig.iMax);
+  Joystick.setXAxisRange(rollAxis.GetConfiguration().iMin, rollAxis.GetConfiguration().iMax);
+  Joystick.setYAxisRange(pitchAxis.GetConfiguration().iMin,  pitchAxis.GetConfiguration().iMax);
 }
 
 void SetGains() {
@@ -72,22 +109,19 @@ void SetGains() {
 void UpdateEffects(bool recalculate) {
   //If you need to use the spring effect, set the following parameters.`Position` is the current position of the force feedback axis.
   //For example, connect the encoder with the action axis,the current encoder value is `Positon` and the max encoder value is `MaxPosition`.
-  effects[MEM_ROLL].springMaxPosition = rollConfig.iMax;
-  effects[MEM_PITCH].springMaxPosition = pitchConfig.iMax;
+  effects[MEM_ROLL].springMaxPosition = rollAxis.GetConfiguration().iMax;
+  effects[MEM_PITCH].springMaxPosition =  pitchAxis.GetConfiguration().iMax;
 
-  effects[MEM_ROLL].springPosition = counterRoll.read();
-  effects[MEM_PITCH].springPosition = counterPitch.read();
-
-
-  
+  effects[MEM_ROLL].springPosition = counterRollValue;
+  effects[MEM_PITCH].springPosition = counterPitchValue;
 
   unsigned long currentMillis = millis();
   int16_t diffTime = currentMillis - lastEffectsUpdate;
 
   if (diffTime > 0 && recalculate) {
     lastEffectsUpdate = currentMillis;
-    int16_t positionChangeX = counterRoll.read() - lastX;
-    int16_t positionChangeY = counterPitch.read() - lastY;
+    int16_t positionChangeX = counterRollValue - lastX;
+    int16_t positionChangeY = counterPitchValue - lastY;
     int16_t velX = positionChangeX / diffTime;
     int16_t velY = positionChangeY / diffTime;
     int16_t accelX = ((velX - lastVelX) * 10) / diffTime;
@@ -106,8 +140,8 @@ void UpdateEffects(bool recalculate) {
     effects[MEM_ROLL].damperVelocity = velX;
     effects[MEM_PITCH].damperVelocity = velY;
 
-    lastX = counterRoll.read();
-    lastY = counterPitch.read();
+    lastX = counterRollValue;
+    lastY = counterPitchValue;
     lastVelX = velX;
     lastVelY = velY;
     lastAccelX = accelX;
@@ -122,8 +156,8 @@ void UpdateEffects(bool recalculate) {
   }
 
 
-  Joystick.setXAxis(-counterRoll.read());
-  Joystick.setYAxis(counterPitch.read());
+  Joystick.setXAxis(-counterRollValue);
+  Joystick.setYAxis(counterPitchValue);
 
 
   Joystick.setEffectParams(effects);

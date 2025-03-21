@@ -1,0 +1,149 @@
+{
+  "uuid": "9bda7f5c2f416bde7154c513dbe12aed",
+  "path": "Offline/FFB_Arduino_Yoke_2.0_YokeBoard",
+  "name": "FFB_Arduino_Yoke_2.0_YokeBoard",
+  "content": "",
+  "created_at": "2024-09-13 15:34:54",
+  "updated_at": "2025-02-10 10:58:25",
+  "stick": "",
+  "documents": [
+    {
+      "uuid": "6ba5266ed1e1e265c2159a75fc7c4dca",
+      "title": "Sheet_Arduino_Yoke_2.0_YokeBoard",
+      "description": "",
+      "docType": "1",
+      "master": "",
+      "thumb": "/images/thumb-default.png",
+      "components": {
+        "b210af5a1436310a86e8b108e2e5a90b": 16,
+        "9386d776ad1881e0718a6fa711cc746d": 2,
+        "7bd7894013a44db1b86a461fcfcf85ca": 8,
+        "0b605335f51d417f9b7af577566d16d2": 1
+      },
+      "BOM": [
+        [
+          "Value",
+          "Quantity",
+          "Package",
+          "Components",
+          "CustomPara"
+        ],
+        [
+          "74HC165D,653",
+          2,
+          "SOIC-16_L9.9-W3.9-P1.27-LS6.0-BL",
+          "IC1,IC2",
+          {
+            "Manufacturer Part": "74HC165D,653",
+            "Manufacturer": "Nexperia(安世)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C5613"
+          }
+        ],
+        [
+          "10kΩ",
+          16,
+          "R0603",
+          "R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14,R15,R16",
+          {
+            "Manufacturer Part": "0603WAF1002T5E",
+            "Manufacturer": "UNI-ROYAL(厚声)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C25804"
+          }
+        ]
+      ],
+      "updateTime": 1739181503,
+      "createTime": 1726234495,
+      "histories": [],
+      "created_at": "2024-09-13 15:34:55",
+      "updated_at": "2025-02-10 10:58:23"
+    },
+    {
+      "uuid": "4e2785b3f182c35eff063c4133327b30",
+      "puuid": "9bda7f5c2f416bde7154c513dbe12aed",
+      "title": "PCB_FFB_Arduino_Yoke_2.0_YokeBoard",
+      "filename": "PCB_FFB_Arduino_Yoke_2.0_YokeBoard.json",
+      "description": "",
+      "docType": "3",
+      "master": "",
+      "thumb": "/images/thumb-default.png",
+      "components": {
+        "398691f1f785460098bbe5ee6590333c": 16,
+        "3cedd95c5b4143699603b299d66ddf28": 1,
+        "3367620777a54740aa19fe49dae42acd": 8,
+        "5cafa9ae5a9e4b2ab529c9f08b47eb94": 2
+      },
+      "BOM": [
+        [
+          "Value",
+          "Quantity",
+          "Package",
+          "Components",
+          "CustomPara"
+        ],
+        [
+          "Yoke",
+          1,
+          "HDR-TH_6P-P2.54-V-M-1",
+          "H5",
+          {
+            "Manufacturer Part": "2.54-1x6P直针",
+            "Manufacturer": "BOOMELE(博穆精密)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C37208"
+          }
+        ],
+        [
+          "Header-Male-2.54_2x8",
+          2,
+          "HDR-TH_16P-P2.54-V-M-R2-C8-S2.54",
+          "P1,P2",
+          {
+            "Manufacturer Part": "2.54-2*8P针",
+            "Manufacturer": "BOOMELE(博穆精密)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C68234"
+          }
+        ],
+        [
+          "10kΩ",
+          16,
+          "R0603",
+          "R14,R15,R16,R17,R18,R19,R20,R21,R22,R23,R24,R25,R26,R27,R28,R29",
+          {
+            "Manufacturer Part": "0603WAF1002T5E",
+            "Manufacturer": "UNI-ROYAL(厚声)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C25804"
+          }
+        ],
+        [
+          "74HC165D,653",
+          2,
+          "SOIC-16_L9.9-W3.9-P1.27-LS6.0-BL",
+          "U2,U4",
+          {
+            "Manufacturer Part": "74HC165D,653",
+            "Manufacturer": "Nexperia(安世)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C5613"
+          }
+        ]
+      ],
+      "updateTime": 1739181505,
+      "createTime": 1726234955,
+      "histories": [],
+      "created_at": "2024-09-13 15:42:35",
+      "updated_at": "2025-02-10 10:58:25"
+    }
+  ],
+  "sort": [
+    "7f50efd11d9b6dd7f53bebb05c746e1b",
+    "f7d70d29839acb6e490ce0f1e2a15c79"
+  ],
+  "title": "FFB_Arduino_Yoke_2.0_YokeBoard",
+  "foldername": "FFB_Arduino_Yoke_2.0_YokeBoard",
+  "schfilename": "FFB_Arduino_Yoke_2.0_YokeBoard.json",
+  "schfilemtime": 1739181503874
+}
