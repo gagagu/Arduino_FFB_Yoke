@@ -28,8 +28,6 @@ You can use the code with board v2.0 and board v1.3.5 together. You only have to
 It shows how to create a force feedback yoke (and later pedals) for using with Flight Simulator.
 It consist of 3d components, electronic schematics and arduino source code.
 
-
-
 ## Discord
 You are welcome to join my Discord to get newest Info and support, [here](https://discord.gg/zrYUcJWu7F)
 
@@ -45,5 +43,7 @@ This project is a combination of several existing github projects and 3d Models 
 * [jimmyberg](https://github.com/jimmyberg/LowPassFilter)
 
 ### Thingiverse
-* [Saitek FFB Yoke](https://www.thingiverse.com/thing:5241628)
+* [Arduino FFB Yoke 2.0](https://www.thingiverse.com/thing:6464701)
+* [Arduino FFB Yoke 2.0 Remixes](https://www.thingiverse.com/thing:6786283)
 * [CadetYoke v2.0](https://www.thingiverse.com/thing:4884092)
+* [Saitek FFB Yoke](https://www.thingiverse.com/thing:5241628)
