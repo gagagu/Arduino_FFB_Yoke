@@ -146,7 +146,7 @@ void loop() {
   Serial.print(counterRollValue);
   Serial.print(", Pitch:");
   Serial.print(counterPitchValue);  
-  if calibration button is pressed than reset counters
+  //if calibration button is pressed than reset counters
   if (mux.CalibrationButtonPushed()) {  
     counterRoll.readAndReset(); 
     counterPitch.readAndReset();
