@@ -83,7 +83,7 @@
 #define DYNAMIC_HID_REPORT_TYPE_FEATURE 3 // Feature report.
 
 // Number of endpoints used by the device.
-#define PID_ENPOINT_COUNT 2
+#define PID_ENDPOINT_COUNT 2
 
 // Define the IN and OUT endpoints for USB communication.
 #define PID_ENDPOINT_IN  (pluggedEndpoint)
@@ -150,7 +150,7 @@ public:
   int SendReport(uint8_t id, const void* data, int len);
   
   // Receives data from the USB OUT endpoint.
-  int RecvData(byte* data);
+  int RecvData(byte* data, uint8_t maxLen = 64);
   
   // Receives data from the USB and processes it.
   void RecvfromUsb();

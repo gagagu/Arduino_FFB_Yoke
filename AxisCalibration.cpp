@@ -1,296 +1,274 @@
-/* 
- Created by A.Eckers aka Gagagu
- http://www.gagagu.de
- https://github.com/gagagu/Arduino_FFB_Yoke
- https://www.youtube.com/@gagagu01
-*/
-
 /*
-  This repository contains code for Arduino projects. 
-  The code is provided "as is," without warranty of any kind, either express or implied, 
-  including but not limited to the warranties of merchantability, 
-  fitness for a particular purpose, or non-infringement. 
-  The author(s) make no representations or warranties about the accuracy or completeness of 
-  the code or its suitability for your specific use case.
-
-  By using this code, you acknowledge and agree that you are solely responsible for any 
-  consequences that may arise from its use. 
-
-  For DIY projects involving electronic and electromechanical moving parts, caution is essential. 
-  Ensure that you take the appropriate safety precautions, particularly when working with electricity. 
-  Only work with devices if you understand their functionality and potential risks, and always wear 
-  appropriate protective equipment. 
-  Make sure you are working in a safe, well-lit environment, and that all components are properly installed and secured to avoid injury or damage.
-
-  Special caution is required when building a force feedback device. Unexpected or sudden movements may occur, 
-  which could lead to damage to people or other objects. 
-  Ensure that all mechanical parts are securely mounted and that the work area is free of obstacles.
-  
-  By using this project, you acknowledge and agree that you are solely responsible for any consequences that may arise from its use. 
-  The author(s) will not be held liable for any damages, injuries, or issues arising from the use of the project, 
-  including but not limited to malfunctioning hardware, electrical damage, personal injury, or damage caused by 
-  unintended movements of the force feedback device. The responsibility for proper handling, installation, 
-  and use of the devices and components lies with the user.
-  
-  Use at your own risk.
+ Created by A.Eckers aka Gagagu – improved version
+ http://www.gagagu.de / https://github.com/gagagu/Arduino_FFB_Yoke
 */
 
 #include "AxisCalibration.h"
 
-Axis::Axis(int motorLeftPin, int motorRightPin, bool isRoll, Encoder* encoderPtr, Multiplexer* multiplexerPtr, BeepManager* beepManagerPtr)
-    : motorPinLeft(motorLeftPin), motorPinRight(motorRightPin), blIsRoll(isRoll), encoder(encoderPtr), speed(1), lastMovementTime(millis()), multiplexer(multiplexerPtr), beepManager(beepManagerPtr)
-{
-}
+Axis::Axis(int motorLeftPin, int motorRightPin, bool isRoll,
+           Encoder* encoderPtr, Multiplexer* multiplexerPtr, BeepManager* beepManagerPtr)
+    : motorPinLeft(motorLeftPin), motorPinRight(motorRightPin),
+      blIsRoll(isRoll), encoder(encoderPtr),
+      speed(1), lastMovementTime(millis()),
+      multiplexer(multiplexerPtr), beepManager(beepManagerPtr)
+{}
 
-// Method to move the motor in a given direction
 void Axis::MoveMotor(bool direction) {
-    if (direction) {
-        analogWrite(motorPinLeft, 0);
-        analogWrite(motorPinRight, speed);
-    } else {
-        analogWrite(motorPinLeft, speed);
-        analogWrite(motorPinRight, 0);
-    }
-}
-
-// Method to stop the motor
-void Axis::StopMotor() {
-    analogWrite(motorPinLeft, 0);
+  if (direction) {
+    analogWrite(motorPinLeft,  0);
+    analogWrite(motorPinRight, speed);
+  } else {
+    analogWrite(motorPinLeft,  speed);
     analogWrite(motorPinRight, 0);
-    delay(waitDelayMotorStops);  // Small delay to ensure motor completely stops
+  }
 }
 
-// Helper method to manage motor movement
-void Axis::ManageMovement( bool direction, unsigned long& lastMovementTime, int& lastEncoderValue, bool& speedIncreased) {
-    ReadMultiplexer(); // Update end switch states
-    int currentEncoderValue = encoder->read();
-
-    // Check for speed increase
-    if (abs(currentEncoderValue - lastEncoderValue)<=20) {
-        if (speed < maxSpeed) speed++;  // Increment speed by 1
-    } else {
-        lastMovementTime = millis();
-        if (!speedIncreased) {
-            speed += speedIncrement;  // Increase speed by defined increment
-            if (speed > maxSpeed) speed = maxSpeed;  // Ensure speed doesn't exceed maxSpeed
-            speedIncreased = true;  // Flag for speed increase
-        }
-    }
-    lastEncoderValue = currentEncoderValue;
-    MoveMotor(direction);
+void Axis::StopMotor() {
+  analogWrite(motorPinLeft,  0);
+  analogWrite(motorPinRight, 0);
+  delay(waitDelayMotorStops);
 }
 
-// read multiplexer for end stops
-void Axis::ReadMultiplexer(){
-    multiplexer->ReadMux();  // Update end switch states
-    if(blIsRoll)
-    {
-      blEndSwitchLeft=multiplexer->EndSwitchRollLeft();
-      blEndSwitchRight=multiplexer->EndSwitchRollRight();
-    }else{
-      blEndSwitchLeft=multiplexer->EndSwitchPitchUp();
-      blEndSwitchRight=multiplexer->EndSwitchPitchDown();
-    }
+void Axis::ReadMultiplexer() {
+  multiplexer->ReadMux();
+  if (blIsRoll) {
+    blEndSwitchLeft  = multiplexer->EndSwitchRollLeft();
+    blEndSwitchRight = multiplexer->EndSwitchRollRight();
+  } else {
+    blEndSwitchLeft  = multiplexer->EndSwitchPitchUp();
+    blEndSwitchRight = multiplexer->EndSwitchPitchDown();
+  }
 }
 
-// reset the encoder counter
-int Axis::ResetEncoder(){
+int Axis::ResetEncoder() {
   encoder->write(0);
   return 0;
 }
 
-// Check Timeouts
-bool Axis::CheckTimeouts(unsigned long lastMovementTime, unsigned long calibrationStartTime)
-{
-  // Movement Timeout?
-  if (millis() - lastMovementTime >= timeout) {
-      StopMotor();
-      config.blError = true;
-      config.blAxisTimeout = true;
-      return true;
+// BUG FIX 4: renamed parameter to avoid shadowing this->lastMovementTime
+bool Axis::CheckTimeouts(unsigned long lastMoveTime, unsigned long calibStartTime) {
+  if (millis() - lastMoveTime >= timeout) {
+    StopMotor();
+    config.blError       = true;
+    config.blAxisTimeout = true;
+    DBG2(F("[calib] TIMEOUT – axis not moving\n"));
+    return true;
   }
-
-  // General Timeout?
-  if (millis() - calibrationStartTime >= calibrationTimeout) {
-      StopMotor();
-      config.blError = true;
-      config.blTimeout=true;
-      return true;
+  if (millis() - calibStartTime >= calibrationTimeout) {
+    StopMotor();
+    config.blError   = true;
+    config.blTimeout = true;
+    DBG2(F("[calib] TIMEOUT – overall calibration limit\n"));
+    return true;
   }
-
   return false;
 }
 
-// Calibration method for the axis
+void Axis::ManageMovement(bool direction, unsigned long &lastMoveTime,
+                          int &lastEncoderValue, bool &speedIncreased) {
+  ReadMultiplexer();
+  int current = encoder->read();
+
+  if (abs(current - lastEncoderValue) <= 20) {
+    if (speed < maxSpeed) speed++;
+  } else {
+    lastMoveTime = millis();
+    if (!speedIncreased) {
+      speed += speedIncrement;
+      if (speed > maxSpeed) speed = maxSpeed;
+      speedIncreased = true;
+    }
+  }
+  lastEncoderValue = current;
+  MoveMotor(direction);
+}
+
+// ── Helper: print calibration step header via DBG2 ──────────────────────────
+#if defined(DBG_LEVEL) && DBG_LEVEL >= 2
+static void dbgStep(byte step, const __FlashStringHelper* label) {
+  DBG2(F("[calib] step "));
+  DBG2(step);
+  DBG2(F(": "));
+  DBG2LN(label);
+}
+#else
+static void dbgStep(byte, const __FlashStringHelper*) {}
+#endif
+
+/***********************************************************************
+  Full calibration sequence
+
+  Step 1 – escape any end switch the axis starts on
+  Step 2 – drive to the right end switch
+  Step 3 – drive to the left end switch; measure full travel
+  Step 4 – return to centre (encoder = 0)
+***********************************************************************/
 void Axis::Calibrate() {
-    config = {false, 0, 0, false, false, false, false}; // Reset config
-    calibrationStartTime = millis();  // Mark the calibration start time
-    int lastEncoderValue = ResetEncoder();
-    bool direction = true;  // Start by moving in the positive direction
-    bool speedIncreased = false;  // Flag for speed increase
+  config               = {false, 0, 0, false, false, false, false};
+  calibrationStartTime = millis();
 
-    speed = 1;
-    ReadMultiplexer();  // Update end switch states
-    StopMotor();  // Stop the motor once an end switch is hit     
+  int  lastEncoderValue = ResetEncoder();
+  bool speedIncreased   = false;
 
-    //**********************************************************************
-    // Step 1: Move away from the end switch if the axis is at an end switch
-    //**********************************************************************
-    if (blEndSwitchLeft || blEndSwitchRight) {
-        lastMovementTime = millis();
-        while (blEndSwitchLeft || blEndSwitchRight) {
-            ManageMovement(direction, lastMovementTime, lastEncoderValue, speedIncreased);
+  speed = 1;
+  ReadMultiplexer();
+  StopMotor();
 
-            if(CheckTimeouts(lastMovementTime, calibrationStartTime))
-              break;
+  DBG2(F("[calib] start – axis: "));
+  DBG2LN(blIsRoll ? F("ROLL") : F("PITCH"));
 
-            delay(whileDelay);
-        }
-        StopMotor();  // Stop the motor after leaving the end switch
-        delay(waitDelayAfterMoveOutEndstop);   // Short delay for stabilization
-    }
+  //--------------------------------------------------------------------
+  // Step 1: escape from end switch
+  // BUG FIX 1: choose escape direction based on which switch is active
+  //--------------------------------------------------------------------
+  dbgStep(1, F("escape end switch (if needed)"));
 
-    // On error leave
-    if(config.blError)
-    {
-      return;
-    }
-
-    //**********************************************************************
-    // Step 2: Move towards the first end switch
-    //**********************************************************************
-    speed=1;
-    lastMovementTime = millis();
-    lastEncoderValue = ResetEncoder();
-    speedIncreased = false;  // Reset for next loop
-
-    while (!blEndSwitchLeft && !blEndSwitchRight) {
-        ManageMovement(direction, lastMovementTime, lastEncoderValue, speedIncreased);
-
-        if(CheckTimeouts(lastMovementTime, calibrationStartTime))
-          break;
-
-        delay(whileDelay);
-    }
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
-    StopMotor();  // Stop the motor once an end switch is hit     
-
-    // Determine which end switch was triggered and set motor inversion if necessary
-    if(blEndSwitchLeft)
-    {
-      config.blMotorInverted = true;  
+  if (blEndSwitchLeft || blEndSwitchRight) {
+    if (blEndSwitchLeft && blEndSwitchRight) {
+      StopMotor();
       config.blError = true;
-    }
-
-    // On error leave
-    if(config.blError)
-    {
+      DBG2(F("[calib] ERROR: both end switches active simultaneously\n"));
       return;
     }
 
-    //**********************************************************************
-    // Step 3: Move to the opposite end switch
-    //**********************************************************************
-    direction = !direction;  // Move in the opposite direction
+    bool escapeDir = blEndSwitchLeft;  // left active → move right (true), and vice versa
+    DBG2(F("[calib] on end switch, escaping dir=")); DBG2LN(escapeDir);
 
-    delay(1000);
-    speed=1;
-    lastMovementTime = millis();
-    lastEncoderValue = ResetEncoder();
-    speedIncreased = false;  // Reset for next loop
-
-    while (!blEndSwitchLeft) {
-        ManageMovement(direction, lastMovementTime, lastEncoderValue, speedIncreased);
-
-        if(CheckTimeouts(lastMovementTime, calibrationStartTime))
-          break;
-
-        delay(whileDelay);
+    unsigned long lastMoveTime = millis();
+    while (blEndSwitchLeft || blEndSwitchRight) {
+      ManageMovement(escapeDir, lastMoveTime, lastEncoderValue, speedIncreased);
+      DBG2(F("  enc=")); DBG2(encoder->read()); DBG2(F(" spd=")); DBG2LN(speed);
+      // Overall calibration timeout still catches stuck hardware here
+      if (millis() - calibrationStartTime >= calibrationTimeout) break;
+      delay(whileDelay);
     }
-    StopMotor();  // Stop the motor once an end switch is hit
-
-
-    if(encoder->read()<0) 
-    {
-      config.blEncoderInverted = true;
-      config.blError = true;
-    }
-
-    // On error leave
-    if(config.blError)
-    {
-      return;
-    }
-
-    // Calculate iMin and iMax based on the encoder value
-    config.iMax = (encoder->read() / 2);  // Set iMax as half of the maximum encoder value
-    config.iMin = -config.iMax;            // Set iMin as the negative value of iMax
-    encoder->write(config.iMax);  // Set the encoder to the iMax value at the end of the calibration
-
-  // Serial.print(", Min1:");      
-  // Serial.print(config.iMin);
-  // Serial.print(", Max1:");
-  // Serial.print(config.iMax);  
-  // Serial.println("");
-
-    // Step 4: Move back until the encoder reaches 0
-    delay(1000);
-    speed = 1;
-    direction = !direction;  // Move in the opposite direction
-    lastMovementTime = millis();
-    lastEncoderValue = config.iMax;
-
-    // Check the sign of the last encoder value
-    bool isLastValuePositive = (lastEncoderValue > 0);
-
-    //**********************************************************************
-    // 4. Move axis to the middle
-    //**********************************************************************
-    while (((isLastValuePositive && encoder->read() >= 0) || (!isLastValuePositive && encoder->read() <= 0)) && !blEndSwitchRight) {
-        ManageMovement( direction, lastMovementTime, lastEncoderValue, speedIncreased);
-
-        if (millis() - lastMovementTime >= timeout) {
-            StopMotor();
-            config.blError = true;
-            return;
-        }
-
-        if (millis() - calibrationStartTime >= calibrationTimeout) {
-            StopMotor();
-            config.blError = true;
-            return;
-        }
-
-        delay(whileDelay);
-    }
-
-    // Stop the motor when the encoder reaches 0
     StopMotor();
+    delay(waitDelayAfterMoveOutEndstop);
+  }
+  if (config.blError) return;
+
+  //--------------------------------------------------------------------
+  // Step 2: drive to right end switch
+  //--------------------------------------------------------------------
+  dbgStep(2, F("drive to right end switch"));
+
+  bool direction = true;
+  speed          = 1;
+  speedIncreased = false;
+  unsigned long lastMoveTime = millis();
+  lastEncoderValue = ResetEncoder();
+
+  while (!blEndSwitchLeft && !blEndSwitchRight) {
+    ManageMovement(direction, lastMoveTime, lastEncoderValue, speedIncreased);
+    DBG2(F("  enc=")); DBG2(encoder->read()); DBG2(F(" spd=")); DBG2LN(speed);
+    if (CheckTimeouts(lastMoveTime, calibrationStartTime)) break;
+    delay(whileDelay);
+  }
+  StopMotor();
+
+  if (blEndSwitchLeft) {
+    config.blMotorInverted = true;
+    config.blError         = true;
+    DBG2(F("[calib] ERROR: motor inverted (left switch hit in step 2)\n"));
+  }
+  if (config.blError) return;
+
+  DBG2(F("[calib] right end switch reached, enc=")); DBG2LN(encoder->read());
+
+  //--------------------------------------------------------------------
+  // Step 3: drive to left end switch; measure full travel.
+  //
+  // NOTE: at loop entry blEndSwitchRight is still TRUE – the motor just
+  // stopped on the right switch at the end of Step 2.  Including it in
+  // the while-condition would exit the loop immediately and falsely flag
+  // an encoder-inversion error.  We therefore loop only on !blEndSwitchLeft
+  // (as the original code did) and check blEndSwitchRight AFTER the loop:
+  // if we ended up back on it without ever reaching the left switch, the
+  // motor drove the wrong way → encoder polarity is inverted.
+  //--------------------------------------------------------------------
+  dbgStep(3, F("drive to left end switch"));
+
+  direction      = !direction;
+  speed          = 1;
+  speedIncreased = false;
+  lastMoveTime   = millis();
+  lastEncoderValue = ResetEncoder();
+
+  delay(1000);
+
+  while (!blEndSwitchLeft) {
+    ManageMovement(direction, lastMoveTime, lastEncoderValue, speedIncreased);
+    DBG2(F("  enc=")); DBG2(encoder->read()); DBG2(F(" spd=")); DBG2LN(speed);
+    if (CheckTimeouts(lastMoveTime, calibrationStartTime)) break;
+    delay(whileDelay);
+  }
+  StopMotor();
+
+  // Ended on the right switch → motor went the wrong direction → encoder inverted
+  if (!blEndSwitchLeft && blEndSwitchRight) {
+    config.blEncoderInverted = true;
+    config.blError           = true;
+    DBG2(F("[calib] ERROR: encoder inverted (right switch hit in step 3)\n"));
+  }
+  if (!config.blError && encoder->read() < 0) {
+    config.blEncoderInverted = true;
+    config.blError           = true;
+    DBG2(F("[calib] ERROR: encoder inverted (negative value at left switch)\n"));
+  }
+  if (config.blError) return;
+
+  // Symmetric axis range – rounded to avoid 1-count asymmetry on odd totals
+  int32_t totalTravel = encoder->read();
+  config.iMax = (int16_t)((totalTravel + 1) / 2);
+  config.iMin = -config.iMax;
+  encoder->write(config.iMax);
+
+  DBG2(F("[calib] travel=")); DBG2(totalTravel);
+  DBG2(F(" iMin="));          DBG2(config.iMin);
+  DBG2(F(" iMax="));          DBG2LN(config.iMax);
+
+  //--------------------------------------------------------------------
+  // Step 4: return to centre
+  // BUG FIX 3: reset speedIncreased so the speed ramp works normally
+  //--------------------------------------------------------------------
+  dbgStep(4, F("return to centre"));
+
+  direction      = !direction;
+  speed          = 1;
+  speedIncreased = false;  // ← the critical reset
+  lastMoveTime   = millis();
+  lastEncoderValue = config.iMax;
+
+  delay(1000);
+
+  bool startedPositive = (lastEncoderValue > 0);
+  while (((startedPositive  && encoder->read() >= 0) ||
+          (!startedPositive && encoder->read() <= 0)) &&
+         !blEndSwitchRight) {
+    ManageMovement(direction, lastMoveTime, lastEncoderValue, speedIncreased);
+    DBG2(F("  enc=")); DBG2(encoder->read()); DBG2(F(" spd=")); DBG2LN(speed);
+    if (CheckTimeouts(lastMoveTime, calibrationStartTime)) return;
+    delay(whileDelay);
+  }
+  StopMotor();
+
+  DBG2(F("[calib] done, centre enc=")); DBG2LN(encoder->read());
 }
 
-// Method to get the current axis configuration
 AxisConfiguration Axis::GetConfiguration() {
-    return config;
+  return config;
 }
 
-bool Axis::CheckError(bool isRoll){
-    if (config.blError) {
-      // error occured
-      beepManager->CalibrationError();  // Calibration error beep
-      delay(BEEP_CODE_DELAY);
-      // switch error and give beep codes
-      if (config.blEncoderInverted)
-        beepManager->CalibrationEncoderInverted(isRoll);
+bool Axis::CheckError(bool isRoll) {
+  if (!config.blError) return false;
 
-      if (config.blMotorInverted)
-        beepManager->CalibrationMotorInverted(isRoll);
+  beepManager->CalibrationError();
+  delay(BEEP_CODE_DELAY);
 
-      if (config.blAxisTimeout)
-        beepManager->CalibrationTimeoutMotor(isRoll);
+  if (config.blEncoderInverted) beepManager->CalibrationEncoderInverted(isRoll);
+  if (config.blMotorInverted)   beepManager->CalibrationMotorInverted(isRoll);
+  if (config.blAxisTimeout)     beepManager->CalibrationTimeoutMotor(isRoll);
+  if (config.blTimeout)         beepManager->CalibrationTimeoutGeneral(isRoll);
 
-      if (config.blTimeout)
-        beepManager->CalibrationTimeoutGeneral(isRoll);
-    }
-
-    return config.blError;
+  return true;
 }

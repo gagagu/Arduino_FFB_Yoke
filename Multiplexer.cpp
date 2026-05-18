@@ -1,278 +1,160 @@
-/* 
- Created by A.Eckers aka Gagagu
- http://www.gagagu.de
- https://github.com/gagagu/Arduino_FFB_Yoke
- https://www.youtube.com/@gagagu01
-*/
-
 /*
-  This repository contains code for Arduino projects. 
-  The code is provided "as is," without warranty of any kind, either express or implied, 
-  including but not limited to the warranties of merchantability, 
-  fitness for a particular purpose, or non-infringement. 
-  The author(s) make no representations or warranties about the accuracy or completeness of 
-  the code or its suitability for your specific use case.
-
-  By using this code, you acknowledge and agree that you are solely responsible for any 
-  consequences that may arise from its use. 
-
-  For DIY projects involving electronic and electromechanical moving parts, caution is essential. 
-  Ensure that you take the appropriate safety precautions, particularly when working with electricity. 
-  Only work with devices if you understand their functionality and potential risks, and always wear 
-  appropriate protective equipment. 
-  Make sure you are working in a safe, well-lit environment, and that all components are properly installed and secured to avoid injury or damage.
-
-  Special caution is required when building a force feedback device. Unexpected or sudden movements may occur, 
-  which could lead to damage to people or other objects. 
-  Ensure that all mechanical parts are securely mounted and that the work area is free of obstacles.
-  
-  By using this project, you acknowledge and agree that you are solely responsible for any consequences that may arise from its use. 
-  The author(s) will not be held liable for any damages, injuries, or issues arising from the use of the project, 
-  including but not limited to malfunctioning hardware, electrical damage, personal injury, or damage caused by 
-  unintended movements of the force feedback device. The responsibility for proper handling, installation, 
-  and use of the devices and components lies with the user.
-  
-  Use at your own risk.
+ Created by A.Eckers aka Gagagu – improved version
+ http://www.gagagu.de / https://github.com/gagagu/Arduino_FFB_Yoke
 */
 
 #include "defines.h"
 #include "Multiplexer.h"
 
-
-// Constructor to initialize the Joystick pointer and end switch state pointers
 Multiplexer::Multiplexer(Joystick_* joystickPtr) {
-    this->joystick = joystickPtr;
+  this->joystick = joystickPtr;
 
-    #ifdef ARDUINO_PRO_MICRO
-      mux_yoke.begin(MUX_YOKE_OUT, MUX_YOKE_PL, MUX_YOKE_CLK);
-      mux_int.begin(MUX_INT_OUT, MUX_INT_PL, MUX_INT_CLK);
-    #endif
+#ifdef ARDUINO_PRO_MICRO
+  mux_yoke.begin(MUX_YOKE_OUT, MUX_YOKE_PL, MUX_YOKE_CLK);
+  mux_int.begin(MUX_INT_OUT,   MUX_INT_PL,  MUX_INT_CLK);
+#endif
 }
 
-// Method to read the multiplexer and update end switches
+// Read all multiplexer inputs and update cached state.
 void Multiplexer::ReadMux() {
-  #ifndef ARDUINO_PRO_MICRO
-    iYokeButtonPinStates = 0;
-    iSensorPinStates = 0;
 
-    // for every 16 imput lines of a mutiplexer
-    for (byte x = 0; x < 16; x++) {
-      for (int i = 0; i < 4; i++) {
-          PORTF = (x & (1 << i)) ? (PORTF | (1 << (7 - i))) : (PORTF & ~(1 << (7 - i)));
-      }
+#ifndef ARDUINO_PRO_MICRO
+  iYokeButtonPinStates = 0;
+  iSensorPinStates     = 0;
 
-      // enable mux 1
-      //PORTC = PORTC & B10111111;  // Digital Pin 5 - PortC6
-      PORTC &= ~B01000000; // Digital Pin 5 - PortC6
+  for (byte x = 0; x < 16; x++) {
+    // Set the 4-bit address on PORTF (pins A0-A3)
+    for (int i = 0; i < 4; i++) {
+      PORTF = (x & (1 << i)) ? (PORTF | (1 << (7 - i))) : (PORTF & ~(1 << (7 - i)));
+    }
 
-      // wait for capacitors of mux to react
-      delayMicroseconds(1);
+    // Yoke-button mux
+    PORTC &= ~B01000000;  // enable  (pin 5 / PortC6 LOW)
+    delayMicroseconds(1);
+    iYokeButtonPinStates |= (uint16_t)digitalRead(MUX_SIGNAL_YOKE) << x;
+    PORTC |=  B00100000;  // disable (pin 5 / PortC6 HIGH)
 
-      // read value
-      iYokeButtonPinStates |= digitalRead(MUX_SIGNAL_YOKE) << x;
+    // Sensor mux
+    PORTD &= ~B00010000;  // enable  (pin 4 / PortD4 LOW)
+    delayMicroseconds(1);
+    iSensorPinStates |= (uint16_t)digitalRead(MUX_SIGNAL_INPUT) << x;
+    PORTD |=  B00010000;  // disable (pin 4 / PortD4 HIGH)
+  }
 
-      // disable mux1
-      PORTC |= B00100000; // Digital Pin 5 - PortC6
+  // Decode end switches and controls (active-low logic → invert)
+  blEndSwitchRollLeft        = (iSensorPinStates & (1 << ADJ_ENDSWITCH_ROLL_LEFT))  == 0;
+  blEndSwitchRollRight       = (iSensorPinStates & (1 << ADJ_ENDSWITCH_ROLL_RIGHT)) == 0;
+  blEndSwitchPitchUp         = (iSensorPinStates & (1 << ADJ_ENDSWITCH_PITCH_UP))   == 0;
+  blEndSwitchPitchDown       = (iSensorPinStates & (1 << ADJ_ENDSWITCH_PITCH_DOWN)) == 0;
+  blCalibrationButtonPushed  = (iSensorPinStates & (1 << ADJ_CALIBRATION_BUTTON))   != 0;
+  blMotorPower               = (iSensorPinStates & (1 << ADJ_MOTOR_POWER))          != 0;
 
-      // enable mux 2
-      PORTD &= ~B00010000; // Digital Pin 4 - PortD4
+#else  // ARDUINO_PRO_MICRO
 
-      // wait for capacitors of mux to react
-      delayMicroseconds(1);
+  mux_int.update();
+  blEndSwitchPitchDown      = !mux_int.read(0);
+  blEndSwitchPitchUp        = !mux_int.read(1);
+  blEndSwitchRollLeft       = !mux_int.read(2);
+  blEndSwitchRollRight      = !mux_int.read(3);
+  blCalibrationButtonPushed =  mux_int.read(4);
+  blMotorPower              =  mux_int.read(5);
 
-      // Read value from the second multiplexer
-      iSensorPinStates |= digitalRead(MUX_SIGNAL_INPUT) << x;
+#endif
 
-      // disblae mux 2
-      PORTD |= B00010000; // Digital Pin 4 - PortD4
-
-    }  //for
-
-    //Check end switches
-    blEndSwitchRollLeft=(iSensorPinStates & (1 << ADJ_ENDSWITCH_ROLL_LEFT))==0;
-    blEndSwitchRollRight=(iSensorPinStates & (1 << ADJ_ENDSWITCH_ROLL_RIGHT))==0;
-    blEndSwitchPitchUp=(iSensorPinStates & (1 << ADJ_ENDSWITCH_PITCH_UP))==0;
-    blEndSwitchPitchDown=(iSensorPinStates & (1 << ADJ_ENDSWITCH_PITCH_DOWN))==0;
-    blCalibrationButtonPushed=(iSensorPinStates & (1 << ADJ_CALIBRATION_BUTTON))!=0;
-    blMotorPower=(iSensorPinStates & (1 << ADJ_MOTOR_POWER))!=0;
-  #else
-    mux_int.update();
-    blEndSwitchPitchDown=!mux_int.read(0);
-    blEndSwitchPitchUp=!mux_int.read(1);
-    blEndSwitchRollLeft=!mux_int.read(2);
-    blEndSwitchRollRight=!mux_int.read(3);
-    blCalibrationButtonPushed=mux_int.read(4);
-    blMotorPower=mux_int.read(5);
-  #endif  
-
-  #ifdef SERIAL_DEBUG
-    Serial.print("Calib.: ");
-    Serial.print(blCalibrationButtonPushed);
-    Serial.print(", Power: ");
-    Serial.print(blMotorPower);
-    Serial.print(", Down: ");
-    Serial.print(blEndSwitchPitchDown); 
-    Serial.print(", Up: ");
-    Serial.print(blEndSwitchPitchUp); 
-    Serial.print(", Left: ");
-    Serial.print(blEndSwitchRollLeft); 
-    Serial.print(", Right: ");
-    Serial.print(blEndSwitchRollRight);     
-  #endif  
+  // Level-3 debug: raw sensor/switch state on every mux read
+  DBG3(F("[mux] calib="));  DBG3(blCalibrationButtonPushed);
+  DBG3(F(" pwr="));         DBG3(blMotorPower);
+  DBG3(F(" dn="));          DBG3(blEndSwitchPitchDown);
+  DBG3(F(" up="));          DBG3(blEndSwitchPitchUp);
+  DBG3(F(" lf="));          DBG3(blEndSwitchRollLeft);
+  DBG3(F(" rg="));          DBG3LN(blEndSwitchRollRight);
 }
 
-bool Multiplexer::EndSwitchRollLeft(){
-  return blEndSwitchRollLeft;
-}
+// ── Getters ────────────────────────────────────────────────────────────────
 
-bool Multiplexer::EndSwitchRollRight(){
-  return blEndSwitchRollRight;
-}
+bool     Multiplexer::EndSwitchRollLeft()       { return blEndSwitchRollLeft; }
+bool     Multiplexer::EndSwitchRollRight()      { return blEndSwitchRollRight; }
+bool     Multiplexer::EndSwitchPitchUp()        { return blEndSwitchPitchUp; }
+bool     Multiplexer::EndSwitchPitchDown()      { return blEndSwitchPitchDown; }
+bool     Multiplexer::CalibrationButtonPushed() { return blCalibrationButtonPushed; }
+bool     Multiplexer::MotorPower()              { return blMotorPower; }
+uint16_t Multiplexer::GetYokeButtonPinStates()  { return iYokeButtonPinStates; }
+uint16_t Multiplexer::GetSensorPinStates()      { return iSensorPinStates; }
 
-bool Multiplexer::EndSwitchPitchUp(){
-  return blEndSwitchPitchUp;
-}
-
-bool Multiplexer::EndSwitchPitchDown(){
-  return blEndSwitchPitchDown;
-}
-
-bool Multiplexer::CalibrationButtonPushed(){
-  return blCalibrationButtonPushed;
-}
-
-bool Multiplexer::MotorPower(){
-  return blMotorPower;
-}
-
-uint16_t Multiplexer::GetYokeButtonPinStates(){
-  return iYokeButtonPinStates;
-}
-
-uint16_t Multiplexer::GetSensorPinStates(){
-  return iSensorPinStates;
-}
-
-// Method to update the joystick buttons based on multiplexer input
+// Update joystick button and hat-switch state from the latest mux read.
+//
+// BUG FIX: on Pro Micro, the original code wrapped ALL button-setting
+// logic inside #else of #ifdef SERIAL_DEBUG.  In debug mode, only
+// Serial.print ran – buttons were never set.  Now debug output and
+// button-setting are always both executed; the DBG3 macro compiles
+// to nothing in non-debug builds, so there is no overhead.
 void Multiplexer::UpdateJoystickButtons() {
-  bool data =0;
 
-  #ifndef ARDUINO_PRO_MICRO
-    #ifdef SERIAL_DEBUG
-   
-      for (byte channel = 4; channel < 16; channel++) {
-          Serial.print(", Ch.");
-          Serial.print(channel);
-          Serial.print(": ");
-          Serial.print((iYokeButtonPinStates >> channel) & 1);
-      }
-    #endif
+#ifndef ARDUINO_PRO_MICRO
 
-    // Bit-Shift um 12 für Hat-Switch-Position
-    uint16_t hatSwitchState = iYokeButtonPinStates << 12;
+  // Debug: log raw channel states (level 3 only)
+  for (byte ch = 4; ch < 16; ch++) {
+    DBG3(F(", Ch.")); DBG3(ch);
+    DBG3(F(":")); DBG3((iYokeButtonPinStates >> ch) & 1);
+  }
 
-    // Setze die Hat-Switch-Position
-    switch (hatSwitchState) {
-      case 0B0000000000000000:
-        joystick->setHatSwitch(0, -1); // no direction
-        break;
-      case 0B0100000000000000:
-        joystick->setHatSwitch(0, 0); // up
-        break;
-      case 0B0101000000000000:
-        joystick->setHatSwitch(0, 45); // up right
-        break;
-      case 0B0001000000000000:
-        joystick->setHatSwitch(0, 90); // right
-        break;
-      case 0B0011000000000000:
-        joystick->setHatSwitch(0, 135); // down right
-        break;
-      case 0B0010000000000000:
-        joystick->setHatSwitch(0, 180); // down
-        break;
-      case 0B1010000000000000:
-        joystick->setHatSwitch(0, 225); // down left
-        break;
-      case 0B1000000000000000:
-        joystick->setHatSwitch(0, 270); // left
-        break;
-      case 0B1100000000000000:
-        joystick->setHatSwitch(0, 315); // up left
-        break;
-      default:
-        break; // no change
-    }
+  // Hat switch: bits 0-3 of the yoke button word
+  uint16_t hatSwitchState = iYokeButtonPinStates << 12;
+  switch (hatSwitchState) {
+    case 0b0000000000000000: joystick->setHatSwitch(0,  -1); break;
+    case 0b0100000000000000: joystick->setHatSwitch(0,   0); break;
+    case 0b0101000000000000: joystick->setHatSwitch(0,  45); break;
+    case 0b0001000000000000: joystick->setHatSwitch(0,  90); break;
+    case 0b0011000000000000: joystick->setHatSwitch(0, 135); break;
+    case 0b0010000000000000: joystick->setHatSwitch(0, 180); break;
+    case 0b1010000000000000: joystick->setHatSwitch(0, 225); break;
+    case 0b1000000000000000: joystick->setHatSwitch(0, 270); break;
+    case 0b1100000000000000: joystick->setHatSwitch(0, 315); break;
+    default: break;
+  }
 
-    // Lese Button-Zustände vom Multiplexer
-    for (byte channel = 4; channel < 16; channel++) {
-      joystick->setButton(channel - 4, (iYokeButtonPinStates >> channel) & 1);
-    }
-  #else
-  
-    mux_yoke.update();
+  for (byte ch = 4; ch < 16; ch++) {
+    joystick->setButton(ch - 4, (iYokeButtonPinStates >> ch) & 1);
+  }
 
-    #ifdef SERIAL_DEBUG
-      Serial.print(", H. Up: ");
-      Serial.print(!mux_yoke.read(0));
-      Serial.print(", H. Dn: ");
-      Serial.print(!mux_yoke.read(2));
-      Serial.print(", H. Lf: ");
-      Serial.print(!mux_yoke.read(3));
-      Serial.print(", H. Rg: ");
-      Serial.print(!mux_yoke.read(1));
+#else  // ARDUINO_PRO_MICRO
 
+  mux_yoke.update();
 
-      for(uint8_t i=4, n=mux_yoke.getLength(); i < n ; i++){
-          data = !mux_yoke.read(i);
-          Serial.print(", Pin ");
-          Serial.print(i);
-          Serial.print(": ");
-          Serial.print(data);
-      }
-    #else
+  // Debug: log hat-switch and button channels (level 3 only)
+  DBG3(F(", H.Up="));  DBG3(!mux_yoke.read(0));
+  DBG3(F(" H.Dn="));   DBG3(!mux_yoke.read(2));
+  DBG3(F(" H.Lf="));   DBG3(!mux_yoke.read(3));
+  DBG3(F(" H.Rg="));   DBG3LN(!mux_yoke.read(1));
 
-    byte hatSwitchState=0;
-    hatSwitchState |= (!mux_yoke.read(0) << 0);
-    hatSwitchState |= (!mux_yoke.read(1) << 1);
-    hatSwitchState |= (!mux_yoke.read(2) << 2);
-    hatSwitchState |= (!mux_yoke.read(3) << 3);
+  for (uint8_t i = 4, n = mux_yoke.getLength(); i < n; i++) {
+    DBG3(F(", Pin")); DBG3(i); DBG3(F("=")); DBG3LN(!mux_yoke.read(i));
+  }
 
-    switch (hatSwitchState) {
-        case 0B00000000:
-          joystick->setHatSwitch(0, -1); // no direction
-          break;
-        case 0B00000001:
-          joystick->setHatSwitch(0, 0); // up
-          break;
-        case 0B00000011:
-          joystick->setHatSwitch(0, 45); // up right
-          break;
-        case 0B00000010:
-          joystick->setHatSwitch(0, 90); // right
-          break;
-        case 0B00000110:
-          joystick->setHatSwitch(0, 135); // down right
-          break;
-        case 0B00000100:
-          joystick->setHatSwitch(0, 180); // down
-          break;
-        case 0B00001100:
-          joystick->setHatSwitch(0, 225); // down left
-          break;
-        case 0B00001000:
-          joystick->setHatSwitch(0, 270); // left
-          break;
-        case 0B00001001:
-          joystick->setHatSwitch(0, 315); // up left
-          break;
-        default:
-          break; // no change
-      }
+  // Hat switch – always set (was missing in debug mode before)
+  byte hatState = 0;
+  hatState |= (!mux_yoke.read(0) << 0);  // up
+  hatState |= (!mux_yoke.read(1) << 1);  // right
+  hatState |= (!mux_yoke.read(2) << 2);  // down
+  hatState |= (!mux_yoke.read(3) << 3);  // left
 
-      for (byte channel = 4; channel < 16; channel++) {
-        joystick->setButton(channel - 4, !mux_yoke.read(channel));
-      }
-    #endif
-  #endif
+  switch (hatState) {
+    case 0b00000000: joystick->setHatSwitch(0,  -1); break;
+    case 0b00000001: joystick->setHatSwitch(0,   0); break;
+    case 0b00000011: joystick->setHatSwitch(0,  45); break;
+    case 0b00000010: joystick->setHatSwitch(0,  90); break;
+    case 0b00000110: joystick->setHatSwitch(0, 135); break;
+    case 0b00000100: joystick->setHatSwitch(0, 180); break;
+    case 0b00001100: joystick->setHatSwitch(0, 225); break;
+    case 0b00001000: joystick->setHatSwitch(0, 270); break;
+    case 0b00001001: joystick->setHatSwitch(0, 315); break;
+    default: break;
+  }
+
+  // Buttons – always set
+  for (byte ch = 4; ch < 16; ch++) {
+    joystick->setButton(ch - 4, !mux_yoke.read(ch));
+  }
+
+#endif
 }

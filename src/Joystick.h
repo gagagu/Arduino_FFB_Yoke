@@ -55,7 +55,7 @@
 #define JOYSTICK_TYPE_GAMEPAD              0x05
 #define JOYSTICK_TYPE_MULTI_AXIS           0x08
 #define FORCE_FEEDBACK_MAXGAIN              100
-#define SERIAL_CMD_DEBUG_FORCE_VALUES		8
+// SERIAL_CMD_DEBUG_FORCE_VALUES defined in defines.h
 
 struct Gains{
     byte totalGain         = FORCE_FEEDBACK_MAXGAIN;
@@ -138,7 +138,7 @@ private:
 	//force feedback effect params
 	EffectParams* m_effect_params;
 
-	///force calculate funtion
+	//force calculate function
 	float NormalizeRange(int16_t x, int16_t maxValue);
 	int16_t ApplyEnvelope(volatile TEffectState& effect, int16_t value);
 	int16_t ApplyGain(uint16_t value, uint8_t gain);
@@ -225,7 +225,7 @@ public:
 	void setRyAxis(int16_t value);
 	void setRzAxis(int16_t value);
 
-	// Set Simuation Values
+	// Set Simulation Values
 	void setRudder(int16_t value);
 	void setThrottle(int16_t value);
 
@@ -252,7 +252,7 @@ public:
 	    return -1;
 	};
 
-	//set effect params funtions
+	//set effect params functions
 	int8_t setEffectParams(EffectParams* _effect_params){
 	    if(_effect_params != nullptr){
 	        m_effect_params = _effect_params;

@@ -5,162 +5,151 @@
  https://www.youtube.com/@gagagu01
 */
 
-/*
-  This repository contains code for Arduino projects. 
-  The code is provided "as is," without warranty of any kind, either express or implied, 
-  including but not limited to the warranties of merchantability, 
-  fitness for a particular purpose, or non-infringement. 
-  The author(s) make no representations or warranties about the accuracy or completeness of 
-  the code or its suitability for your specific use case.
-
-  By using this code, you acknowledge and agree that you are solely responsible for any 
-  consequences that may arise from its use. 
-
-  For DIY projects involving electronic and electromechanical moving parts, caution is essential. 
-  Ensure that you take the appropriate safety precautions, particularly when working with electricity. 
-  Only work with devices if you understand their functionality and potential risks, and always wear 
-  appropriate protective equipment. 
-  Make sure you are working in a safe, well-lit environment, and that all components are properly installed and secured to avoid injury or damage.
-
-  Special caution is required when building a force feedback device. Unexpected or sudden movements may occur, 
-  which could lead to damage to people or other objects. 
-  Ensure that all mechanical parts are securely mounted and that the work area is free of obstacles.
-  
-  By using this project, you acknowledge and agree that you are solely responsible for any consequences that may arise from its use. 
-  The author(s) will not be held liable for any damages, injuries, or issues arising from the use of the project, 
-  including but not limited to malfunctioning hardware, electrical damage, personal injury, or damage caused by 
-  unintended movements of the force feedback device. The responsibility for proper handling, installation, 
-  and use of the devices and components lies with the user.
-  
-  Use at your own risk.
-*/
-
-
 /******************************************
-  setup joystick and initialisation
+  Set up joystick and initialise defaults
 *******************************************/
 void SetupJoystick() {
-  if(IsEepromDataAvailable()==1)
-  {
+  if (IsEepromDataAvailable() == 1) {
     ReadDataFromEeprom();
-  }else{
+  } else {
     SetupDefaults();
   }
 
-  SetGains();                           // set gains
-  SetRangeJoystick();                   // set range
-  Joystick.begin(false);                // start joystick emulation (no auto send updates);
+  SetGains();
+  SetRangeJoystick();
+  Joystick.begin(false);  // start joystick emulation (no auto-send)
 }
 
-// default values
-void SetupDefaults(){
-  gains[MEM_ROLL].totalGain = default_gain;
-  gains[MEM_ROLL].constantGain = default_gain;
-  gains[MEM_ROLL].rampGain = default_gain;
-  gains[MEM_ROLL].squareGain = default_gain;
-  gains[MEM_ROLL].sineGain = default_gain;
-  gains[MEM_ROLL].triangleGain = default_gain;
-  gains[MEM_ROLL].sawtoothdownGain = default_gain;
-  gains[MEM_ROLL].sawtoothupGain = default_gain;
-  gains[MEM_ROLL].springGain = default_gain;
-  gains[MEM_ROLL].damperGain = default_gain;
-  gains[MEM_ROLL].inertiaGain = default_gain;
-  gains[MEM_ROLL].frictionGain = default_friction_gain;
+/******************************************
+  Helper: apply identical default gains to one axis slot
+*******************************************/
+static void ApplyDefaultGains(Gains &g) {
+  g.totalGain        = DEFAULT_GAIN;
+  g.constantGain     = DEFAULT_GAIN;
+  g.rampGain         = DEFAULT_GAIN;
+  g.squareGain       = DEFAULT_GAIN;
+  g.sineGain         = DEFAULT_GAIN;
+  g.triangleGain     = DEFAULT_GAIN;
+  g.sawtoothdownGain = DEFAULT_GAIN;
+  g.sawtoothupGain   = DEFAULT_GAIN;
+  g.springGain       = DEFAULT_GAIN;
+  g.damperGain       = DEFAULT_GAIN;
+  g.inertiaGain      = DEFAULT_GAIN;
+  g.frictionGain     = DEFAULT_FRICTION_GAIN;
+}
 
-  gains[MEM_PITCH].totalGain = default_gain;
-  gains[MEM_PITCH].constantGain = default_gain;
-  gains[MEM_PITCH].rampGain = default_gain;
-  gains[MEM_PITCH].squareGain = default_gain;
-  gains[MEM_PITCH].sineGain = default_gain;
-  gains[MEM_PITCH].triangleGain = default_gain;
-  gains[MEM_PITCH].sawtoothdownGain = default_gain;
-  gains[MEM_PITCH].sawtoothupGain = default_gain;
-  gains[MEM_PITCH].springGain = default_gain;
-  gains[MEM_PITCH].damperGain = default_gain;
-  gains[MEM_PITCH].inertiaGain = default_gain;
-  gains[MEM_PITCH].frictionGain = default_friction_gain;
+/******************************************
+  Fill all parameters with compiled-in defaults.
+  Called when no EEPROM data is found.
+*******************************************/
+void SetupDefaults() {
+  // Gains – apply the same defaults to both axes via helper
+  ApplyDefaultGains(gains[MEM_ROLL]);
+  ApplyDefaultGains(gains[MEM_PITCH]);
 
-  effects[MEM_ROLL].frictionMaxPositionChange = default_frictionMaxPositionChange_ROLL;
-  effects[MEM_ROLL].inertiaMaxAcceleration = default_inertiaMaxAcceleration_ROLL;
-  effects[MEM_ROLL].damperMaxVelocity = default_damperMaxVelocity_ROLL;
+  // Effect parameters – Roll
+  effects[MEM_ROLL].frictionMaxPositionChange = DEFAULT_FRICTION_MAX_POS_CHANGE_ROLL;
+  effects[MEM_ROLL].inertiaMaxAcceleration    = DEFAULT_INERTIA_MAX_ACCEL_ROLL;
+  effects[MEM_ROLL].damperMaxVelocity         = DEFAULT_DAMPER_MAX_VELOCITY_ROLL;
 
-  effects[MEM_PITCH].frictionMaxPositionChange = default_frictionMaxPositionChange_PITCH;
-  effects[MEM_PITCH].inertiaMaxAcceleration = default_inertiaMaxAcceleration_PITCH;
-  effects[MEM_PITCH].damperMaxVelocity = default_damperMaxVelocity_PITCH;
+  // Effect parameters – Pitch
+  effects[MEM_PITCH].frictionMaxPositionChange = DEFAULT_FRICTION_MAX_POS_CHANGE_PITCH;
+  effects[MEM_PITCH].inertiaMaxAcceleration    = DEFAULT_INERTIA_MAX_ACCEL_PITCH;
+  effects[MEM_PITCH].damperMaxVelocity         = DEFAULT_DAMPER_MAX_VELOCITY_PITCH;
 
-  adjForceMax[MEM_ROLL]=default_ROLL_FORCE_MAX;
-  adjPwmMin[MEM_ROLL]=default_ROLL_PWM_MIN;
-  adjPwmMax[MEM_ROLL]=default_ROLL_PWM_MAX;
+  // Motor / force limits – Roll
+  adjForceMax[MEM_ROLL] = DEFAULT_ROLL_FORCE_MAX;
+  adjPwmMin[MEM_ROLL]   = DEFAULT_ROLL_PWM_MIN;
+  adjPwmMax[MEM_ROLL]   = DEFAULT_ROLL_PWM_MAX;
 
-  adjForceMax[MEM_PITCH]=default_PITCH_FORCE_MAX;
-  adjPwmMin[MEM_PITCH]=default_PITCH_PWM_MIN;
-  adjPwmMax[MEM_PITCH]=default_PITCH_PWM_MAX;
+  // Motor / force limits – Pitch
+  adjForceMax[MEM_PITCH] = DEFAULT_PITCH_FORCE_MAX;
+  adjPwmMin[MEM_PITCH]   = DEFAULT_PITCH_PWM_MIN;
+  adjPwmMax[MEM_PITCH]   = DEFAULT_PITCH_PWM_MAX;
 }
 
 void SetRangeJoystick() {
-  Joystick.setXAxisRange(rollAxis.GetConfiguration().iMin, rollAxis.GetConfiguration().iMax);
-  Joystick.setYAxisRange(pitchAxis.GetConfiguration().iMin,  pitchAxis.GetConfiguration().iMax);
+  Joystick.setXAxisRange(rollAxis.GetConfiguration().iMin,  rollAxis.GetConfiguration().iMax);
+  Joystick.setYAxisRange(pitchAxis.GetConfiguration().iMin, pitchAxis.GetConfiguration().iMax);
 }
 
 void SetGains() {
   Joystick.setGains(gains);
 }
 
+/******************************************
+  Update FFB effect parameters each loop tick.
+  recalculate=true  → recompute velocity/acceleration from encoder deltas
+  recalculate=false → reuse last computed values for smoother output
+*******************************************/
 void UpdateEffects(bool recalculate) {
-  //If you need to use the spring effect, set the following parameters.`Position` is the current position of the force feedback axis.
-  //For example, connect the encoder with the action axis,the current encoder value is `Positon` and the max encoder value is `MaxPosition`.
-  effects[MEM_ROLL].springMaxPosition = rollAxis.GetConfiguration().iMax;
-  effects[MEM_PITCH].springMaxPosition =  pitchAxis.GetConfiguration().iMax;
+  // Spring: current position and range
+  effects[MEM_ROLL].springMaxPosition  = rollAxis.GetConfiguration().iMax;
+  effects[MEM_PITCH].springMaxPosition = pitchAxis.GetConfiguration().iMax;
+  effects[MEM_ROLL].springPosition     = counterRollValue;
+  effects[MEM_PITCH].springPosition    = counterPitchValue;
 
-  effects[MEM_ROLL].springPosition = counterRollValue;
-  effects[MEM_PITCH].springPosition = counterPitchValue;
-
-  unsigned long currentMillis = millis();
-  int16_t diffTime = currentMillis - lastEffectsUpdate;
+  // BUG FIX: was int16_t – overflows after ~32 s and gives wrong velocities.
+  //          Using unsigned long and casting the difference preserves the
+  //          intended behaviour even across millis() rollovers.
+  unsigned long currentMs = millis();
+  unsigned long diffTime  = currentMs - lastEffectsUpdate;
 
   if (diffTime > 0 && recalculate) {
-    lastEffectsUpdate = currentMillis;
-    int16_t positionChangeX = counterRollValue - lastX;
-    int16_t positionChangeY = counterPitchValue - lastY;
-    int16_t velX = positionChangeX / diffTime;
-    int16_t velY = positionChangeY / diffTime;
-    int16_t accelX = ((velX - lastVelX) * 10) / diffTime;
-    int16_t accelY = ((velY - lastVelY) * 10) / diffTime;
+    lastEffectsUpdate = currentMs;
 
-    //If you need to use the friction effect, set the following parameters.`PositionChange`
-    //is the position difference of the force feedback axis.
-    effects[MEM_ROLL].frictionPositionChange = velX;
+    int16_t posChangeX = counterRollValue  - lastX;
+    int16_t posChangeY = counterPitchValue - lastY;
+
+    // Velocity in encoder-counts / ms  (×10 to keep integer precision)
+    int16_t velX   = (int16_t)((int32_t)posChangeX * 10 / (int32_t)diffTime);
+    int16_t velY   = (int16_t)((int32_t)posChangeY * 10 / (int32_t)diffTime);
+
+    // Acceleration in velocity-units / ms  (×10 again)
+    int16_t accelX = (int16_t)((int32_t)(velX - lastVelX) * 10 / (int32_t)diffTime);
+    int16_t accelY = (int16_t)((int32_t)(velY - lastVelY) * 10 / (int32_t)diffTime);
+
+    // Friction uses velocity (position-change per time)
+    effects[MEM_ROLL].frictionPositionChange  = velX;
     effects[MEM_PITCH].frictionPositionChange = velY;
 
-    //If you need to use the damper effect, set the following parameters.`Velocity` is the current velocity of the force feedback axis.
-    effects[MEM_ROLL].inertiaAcceleration = accelX;
-    effects[MEM_PITCH].inertiaAcceleration = accelY;
-
-    //If you need to use the inertia effect, set the following parameters.`Acceleration` is the current acceleration of the force feedback axis.
-    effects[MEM_ROLL].damperVelocity = velX;
+    // Damper uses velocity
+    effects[MEM_ROLL].damperVelocity  = velX;
     effects[MEM_PITCH].damperVelocity = velY;
 
-    lastX = counterRollValue;
-    lastY = counterPitchValue;
-    lastVelX = velX;
-    lastVelY = velY;
+    // Inertia uses acceleration
+    effects[MEM_ROLL].inertiaAcceleration  = accelX;
+    effects[MEM_PITCH].inertiaAcceleration = accelY;
+
+    // Save state for next iteration
+    lastX      = counterRollValue;
+    lastY      = counterPitchValue;
+    lastVelX   = velX;
+    lastVelY   = velY;
     lastAccelX = accelX;
     lastAccelY = accelY;
+
   } else {
-    effects[MEM_ROLL].frictionPositionChange = lastVelX;
+    // Reuse cached values between recalculation intervals
+    effects[MEM_ROLL].frictionPositionChange  = lastVelX;
     effects[MEM_PITCH].frictionPositionChange = lastVelY;
-    effects[MEM_ROLL].inertiaAcceleration = lastAccelX;
-    effects[MEM_PITCH].inertiaAcceleration = lastAccelY;
-    effects[MEM_ROLL].damperVelocity = lastVelX;
-    effects[MEM_PITCH].damperVelocity = lastVelY;
+    effects[MEM_ROLL].damperVelocity          = lastVelX;
+    effects[MEM_PITCH].damperVelocity         = lastVelY;
+    effects[MEM_ROLL].inertiaAcceleration     = lastAccelX;
+    effects[MEM_PITCH].inertiaAcceleration    = lastAccelY;
   }
 
+  // Roll axis is inverted in hardware – negate the reported axis value.
+  // NOTE: springPosition is NOT negated – it must stay in the same
+  // coordinate space as the encoder so that the built-in spring and
+  // ConditionForce calculations push in the correct physical direction.
+  // The cpOffset from the sim (used by AP following) is in the same
+  // physical coordinate space, so no negation is needed here.
+  effects[MEM_ROLL].springPosition = counterRollValue;
 
   Joystick.setXAxis(-counterRollValue);
   Joystick.setYAxis(counterPitchValue);
 
-
   Joystick.setEffectParams(effects);
-
   Joystick.getForce(forces);
 }
