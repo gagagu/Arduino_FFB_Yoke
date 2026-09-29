@@ -1,6 +1,9 @@
 # Arduino_FFB_Yoke
 Flightsim FFB Yoke with Arduino Leonardo
 
+## see the fork of my project: 
+[here](https://github.com/barsk/Arduino_FFB_Yoke)
+
 ### use at your own risk. 
 I am not responsible for any damage to man and machine. Be careful when handling electronics and mechanics.
 
